@@ -1,0 +1,10 @@
+mongo:
+  name: jeopardy
+  user: app
+  host: cluster0.pmnue.mongodb.net
+  options: retryWrites=true&w=majority
+  timeout: 15
+  pass: uZP1QdmKbIP4erWL
+vkapp:
+  secret: sdf234fwr
+mockResponse: y
