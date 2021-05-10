@@ -1,0 +1,11 @@
+[Unit]
+Description=Jeopardy backend service
+
+[Service]
+User=goj
+Group=goj
+ExecStart=/usr/local/bin/goj
+WorkingDirectory=/home/goj
+
+[Install]
+WantedBy=multi-user.target

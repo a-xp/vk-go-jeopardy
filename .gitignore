@@ -1,2 +1,6 @@
 .idea/
 goj
+application.yml
+ansible/hosts.yml
+deploy/
+

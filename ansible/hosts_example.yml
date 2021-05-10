@@ -1,0 +1,9 @@
+all:
+  hosts:
+    web_server:
+      ansible_connection: ssh
+      ansible_host: 127.0.0.1
+      ansible_user: ubuntu
+      ansible_password: password
+      letsencrypt_email: user@example.com
+      domain_name: mydomain.com

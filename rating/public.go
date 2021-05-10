@@ -9,6 +9,7 @@ import (
 	"goj/domain"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 )
 
@@ -24,14 +25,30 @@ type ProfileDTO struct {
 
 func meEndpoint(ctx *gin.Context) {
 	userId := ctx.GetInt64("userId")
-	ctx.JSON(http.StatusOK, bson.M{"isAdmin": domain.IsAdmin(userId)})
+	ctx.JSON(http.StatusOK, bson.M{"isAdmin": domain.IsAdmin(userId), "isValidClient": true})
 }
 
 func ratingEndpoint(ctx *gin.Context) {
-	gameId := ctx.Param("gameId")
+	gameId := ctx.GetString("gameId")
+	userId := ctx.GetInt64("userId")
 	name, ok := domain.GetGameName(gameId)
 	if ok {
-		ctx.JSON(http.StatusOK, bson.M{"rating": domain.GetTopRating(gameId), "name": name})
+		list, err := domain.GetTopRating(gameId)
+		if err == nil {
+			var userRating *domain.RatingEntry
+			for _, e := range list {
+				if e.UserId == userId {
+					userRating = &e
+					break
+				}
+			}
+			if userRating == nil {
+				userRating = domain.GetUserRating(gameId, userId)
+			}
+			ctx.JSON(http.StatusOK, bson.M{"rating": list, "name": name, "userRating": userRating})
+		} else {
+			ctx.Status(http.StatusInternalServerError)
+		}
 	} else {
 		ctx.Status(http.StatusNoContent)
 	}
@@ -49,13 +66,18 @@ func FilterPublic(ctx *gin.Context) {
 					values.Del(k)
 				}
 			}
+			filteredQuery := values.Encode()
 			mac := hmac.New(sha256.New, []byte(vkKey))
-			mac.Write([]byte(values.Encode()))
+			mac.Write([]byte(filteredQuery))
 			expected := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(mac.Sum(nil))
-			if expected == signature {
-				ctx.Set("userId", values.Get("vk_user_id"))
-				ctx.Set("gameId", gameId)
-				return
+			if !validateSignature || expected == signature {
+				userIdStr := values.Get("vk_user_id")
+				userId, err := strconv.ParseInt(userIdStr, 10, 64)
+				if err == nil {
+					ctx.Set("userId", userId)
+					ctx.Set("gameId", gameId)
+					return
+				}
 			}
 		}
 	}

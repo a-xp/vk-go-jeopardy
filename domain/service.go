@@ -26,7 +26,7 @@ func ReloadAdmins() {
 	adminUsers, _ := DAO.getAdminUsers()
 	adminsLock.Lock()
 	defer adminsLock.Unlock()
-	admins := make([]int64, len(adminUsers))
+	admins = make([]int64, len(adminUsers))
 	for i, u := range adminUsers {
 		admins[i] = u.Id
 	}
@@ -79,11 +79,15 @@ func GetGameSession(userId int64, gameId string) (*Answer, error) {
 }
 
 func StoreGameSession(session *Answer) error {
-	return DAO.storeGameSesion(session)
+	return DAO.storeGameSession(session)
 }
 
 func GetTopRating(gameId string) ([]RatingEntry, error) {
 	return DAO.getGameTop(gameId, 100)
+}
+
+func GetUserRating(gameId string, userId int64) *RatingEntry {
+	return DAO.getUserRating(gameId, userId)
 }
 
 func IsAdmin(userId int64) bool {

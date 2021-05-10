@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -103,7 +104,7 @@ func (dao AppDAO) getGameSession(userId int64, gameId string) (*Answer, error) {
 	defer cancel()
 	answers := dao.client.Database(dao.name).Collection("answers")
 	var result Answer
-	err := answers.FindOne(ctx, bson.D{{"gameid", gameId}, {"userid", userId}}).Decode(&result)
+	err := answers.FindOne(ctx, bson.D{{"gameId", gameId}, {"userId", userId}}).Decode(&result)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, nil
@@ -113,7 +114,7 @@ func (dao AppDAO) getGameSession(userId int64, gameId string) (*Answer, error) {
 	return &result, nil
 }
 
-func (dao AppDAO) storeGameSesion(answer *Answer) error {
+func (dao AppDAO) storeGameSession(answer *Answer) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	answers := dao.client.Database(dao.name).Collection("answers")
@@ -131,6 +132,27 @@ type AppDAO struct {
 	name   string
 }
 
+func (dao AppDAO) getUserRating(gameId string, userId int64) *RatingEntry {
+	answer, err := dao.getGameSession(userId, gameId)
+	if err != nil || answer == nil {
+		return nil
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	count, err := dao.client.Database(dao.name).Collection("answers").CountDocuments(ctx,
+		bson.M{"$or": bson.A{
+			bson.M{"gameId": gameId, "score": bson.M{"$gt": answer.Score}},
+			bson.M{"gameId": gameId, "score": answer.Score, "completeTime": bson.M{"$lt": answer.CompleteTime}}}})
+	if err != nil {
+		return nil
+	}
+	return &RatingEntry{
+		Pos:    int(count) + 1,
+		UserId: answer.UserId,
+		Score:  answer.Score,
+	}
+}
+
 func (dao AppDAO) getGameTop(gameId string, limit int) ([]RatingEntry, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -138,7 +160,7 @@ func (dao AppDAO) getGameTop(gameId string, limit int) ([]RatingEntry, error) {
 	cur, err := answers.Aggregate(ctx,
 		bson.A{
 			bson.M{"$match": bson.M{"gameid": gameId}},
-			bson.M{"$score": bson.M{"score": -1}},
+			bson.M{"$sort": bson.M{"score": -1, "completeTime": 1}},
 			bson.M{"$limit": limit},
 			bson.M{"$lookup": bson.M{
 				"from":         "users",
@@ -168,6 +190,9 @@ func (dao AppDAO) getGameTop(gameId string, limit int) ([]RatingEntry, error) {
 	if err != nil {
 		return nil, err
 	}
+	for i, _ := range result {
+		result[i].Pos = i + 1
+	}
 	return result, nil
 }
 
@@ -191,8 +216,12 @@ func (dao AppDAO) getGameById(gameId string) (*Game, bool) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	groups := dao.client.Database(dao.name).Collection("games")
+	oId, err := primitive.ObjectIDFromHex(gameId)
+	if err != nil {
+		return nil, false
+	}
 	var result Game
-	err := groups.FindOne(ctx, bson.D{{"_id", gameId}}).Decode(&result)
+	err = groups.FindOne(ctx, bson.D{{"_id", oId}}).Decode(&result)
 	if err != nil {
 		return nil, false
 	}

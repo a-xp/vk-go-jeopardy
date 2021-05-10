@@ -97,7 +97,7 @@ func getUser(vkId int64, client *vkapi.VKClient) (*domain.User, error) {
 			Id:       int64(data[0].UID),
 			Img:      data[0].Photo,
 			Name:     data[0].FirstName,
-			LastName: data[0].LastName,
+			Lastname: data[0].LastName,
 		}
 		if err = domain.StoreUser(user); err != nil {
 			return nil, err

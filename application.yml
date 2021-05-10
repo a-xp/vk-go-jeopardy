@@ -6,5 +6,8 @@ mongo:
   timeout: 15
   pass: uZP1QdmKbIP4erWL
 vkapp:
-  secret: sdf234fwr
-mockResponse: y
+  secret: Mvp3kzt1PBNYwoqy00QN
+http:
+  listenAddr: "0.0.0.0:3021"
+mockResponse: n
+validateRequest: n

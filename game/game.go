@@ -46,8 +46,9 @@ func chooseTopic(ctx *processingContext) {
 		ctx.session.Topics[topicNum] != nil &&
 		ctx.session.Topics[topicNum].Complete {
 		sendReply(ctx, ctx.game.Messages.TopicComplete)
+	} else {
+		playTopic(ctx, topicNum)
 	}
-	playTopic(ctx, topicNum)
 }
 
 func searchTopicByText(ctx *processingContext) (int, bool) {
@@ -163,7 +164,7 @@ func validateReplyBranch(ctx *processingContext) bool {
 	if len(ctx.event.Details.ParentsStack) > 0 {
 		rootId := ctx.event.Details.ParentsStack[0]
 		for _, topic := range ctx.session.Topics {
-			if topic.PostId == rootId {
+			if topic != nil && topic.PostId == rootId {
 				return true
 			}
 		}
@@ -185,6 +186,6 @@ func sendReply(ctx *processingContext, template string, param ...string) {
 			log.Print("Failed to respond: ", err)
 		}
 	} else {
-		log.Printf("Sending response to %d with message %s", ctx.game.Post.PostOwnerId, message)
+		log.Printf("Sending response to %d with message %s", ctx.game.Post.PostId, message)
 	}
 }

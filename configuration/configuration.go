@@ -17,13 +17,14 @@ type Configuration struct {
 		Pass    string
 	}
 	Http struct {
-		ListenAddr string
+		ListenAddr string `yaml:"listenAddr"`
 		Mode       string
 	}
 	VkApp struct {
 		Secret string
 	}
-	MockResponse bool `yaml:"mockResponse"`
+	MockResponse    bool `yaml:"mockResponse"`
+	ValidateRequest bool `yaml:"validateRequest"`
 }
 
 func printConfigError(err error) {
@@ -36,6 +37,7 @@ func createDefaultConfig() *Configuration {
 	cfg.Http.ListenAddr = "0.0.0.0:9010"
 	cfg.Http.Mode = "debug"
 	cfg.MockResponse = true
+	cfg.ValidateRequest = true
 	return &cfg
 }
 
@@ -47,6 +49,7 @@ func LoadConfigFile() *Configuration {
 	}
 	defer f.Close()
 	decoder := yaml.NewDecoder(f)
+	decoder.SetStrict(true)
 	err = decoder.Decode(cfg)
 	if err != nil {
 		printConfigError(err)

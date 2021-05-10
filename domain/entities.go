@@ -10,19 +10,19 @@ type Game struct {
 	Name     string
 	Active   bool
 	Messages struct {
-		GameComplete   string
-		Error          string
-		TopicComplete  string
-		IncorrectFinal string
-		IncorrectRetry string
-		Correct        string
-		WrongBranch    string
-		UnknownTopic   string
+		GameComplete   string `bson:"gameComplete"`
+		Error          string `bson:"error"`
+		TopicComplete  string `bson:"topicComplete"`
+		IncorrectFinal string `bson:"incorrectFinal"`
+		IncorrectRetry string `bson:"incorrectRetry"`
+		Correct        string `bson:"correct"`
+		WrongBranch    string `bson:"wrongBranch"`
+		UnknownTopic   string `bson:"unknownTopic"`
 	}
 	Post  GamePost
 	Rules struct {
-		InstantWin bool
-		NumTries   int
+		InstantWin bool `bson:"instantWin"`
+		NumTries   int  `bson:"numTries"`
 	}
 	Topics []struct {
 		Name   string
@@ -35,9 +35,9 @@ type Game struct {
 }
 
 type Group struct {
-	Id          int64 `bson:"_id"`
-	ApiKey      string
-	ConfirmCode string
+	Id          int64  `bson:"_id"`
+	ApiKey      string `bson:"apiKey"`
+	ConfirmCode string `bson:"confirmCode"`
 	Name        string
 	Secret      string
 	Active      bool
@@ -47,11 +47,11 @@ type User struct {
 	Id       int64 `bson:"_id"`
 	Img      string
 	Name     string
-	LastName string
+	Lastname string `bson:"lastname"`
 }
 
 type TopicResult struct {
-	PostId   int64
+	PostId   int64 `bson:"postId"`
 	Complete bool
 	Result   bool
 	Attempt  int
@@ -61,19 +61,21 @@ type TopicResult struct {
 type Answer struct {
 	Id           *string `bson:"_id"`
 	Complete     bool
-	CurrentTopic int
+	CompleteTime int64 `bson:"completeTime"`
+	CurrentTopic int   `bson:"currentTopic"`
 	Score        int
-	GameId       string
-	UserId       int64
+	GameId       string `bson:"gameId"`
+	UserId       int64  `bson:"userId"`
 	Topics       []*TopicResult
 }
 
 type RatingEntry struct {
-	UserId   int64
-	Score    int
-	Name     string
-	Lastname string
-	Img      string
+	Pos      int    `json:"pos"`
+	UserId   int64  `json:"userId"`
+	Score    int    `json:"score"`
+	Name     string `json:"name"`
+	Lastname string `json:"lastname"`
+	Img      string `json:"img"`
 }
 
 type AdminUser struct {

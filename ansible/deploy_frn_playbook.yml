@@ -1,0 +1,16 @@
+---
+- hosts: web_server
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Empty www directory
+      file:
+        state: absent
+        path: /var/www/a-xp.xyz/
+    - name: Copy static files
+      copy:
+        src: ../../goj-frontend/build/
+        dest: /var/www/a-xp.xyz/
+        owner: root
+        group: root

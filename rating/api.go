@@ -1,19 +1,33 @@
 package rating
 
 import (
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"goj/configuration"
+	"time"
 )
 
 var vkKey string
+var validateSignature bool
 
-func ConfigureAPI(r *gin.Engine, config configuration.Configuration) {
+func ConfigureAPI(r *gin.Engine, config *configuration.Configuration) {
 
 	vkKey = config.VkApp.Secret
+	validateSignature = config.ValidateRequest
+
+	r.Use(cors.New(cors.Config{
+		AllowAllOrigins:  true,
+		AllowMethods:     []string{"POST", "GET", "DELETE", "PUT"},
+		AllowHeaders:     []string{"X-VK-PARAMS", "Content-Type"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: false,
+		MaxAge:           24 * time.Hour,
+	}))
 
 	api := r.Group("/api")
 	admin := api.Group("/admin")
-	admin.Use()
+	api.Use(FilterPublic)
+	admin.Use(FilterAdmin)
 
 	api.GET("/me", meEndpoint)
 	api.GET("/rating", ratingEndpoint)

@@ -21,7 +21,7 @@ func main() {
 	defer domain.StopEngine()
 	gin.SetMode(AppConfig.Http.Mode)
 	r := gin.Default()
-	r.GET("/ping", func(c *gin.Context) {
+	r.GET("/api/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "pong",
 		})
@@ -31,7 +31,7 @@ func main() {
 		c.Status(http.StatusAccepted)
 	})
 	r.POST("/api/callback", game.HandleVKEvent)
-	rating.ConfigureAPI(r)
+	rating.ConfigureAPI(r, AppConfig)
 	if err := r.Run(AppConfig.Http.ListenAddr); err != nil {
 		log.Fatal(err)
 	}
