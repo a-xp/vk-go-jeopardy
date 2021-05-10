@@ -19,9 +19,11 @@ type Configuration struct {
 	Http struct {
 		ListenAddr string `yaml:"listenAddr"`
 		Mode       string
+		PublicAddr string `yaml:"publicAddr"`
 	}
 	VkApp struct {
 		Secret string
+		Key    string
 	}
 	MockResponse    bool `yaml:"mockResponse"`
 	ValidateRequest bool `yaml:"validateRequest"`

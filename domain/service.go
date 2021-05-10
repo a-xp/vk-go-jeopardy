@@ -1,9 +1,13 @@
 package domain
 
 import (
+	"errors"
 	"goj/configuration"
 	"log"
+	"math/rand"
+	"regexp"
 	"sync"
+	"time"
 )
 
 var gamesLock sync.RWMutex
@@ -12,10 +16,15 @@ var admins Int64Slice
 var adminsLock sync.RWMutex
 
 var MockResponse bool
+var VkKey string
+var PublicAddr string
 
 func InitEngine(cfg *configuration.Configuration) {
 	DAO = initDAO(cfg)
+	rand.Seed(time.Now().UnixNano())
 	MockResponse = cfg.MockResponse
+	PublicAddr = cfg.Http.PublicAddr
+	VkKey = cfg.VkApp.Key
 	gamesLock = sync.RWMutex{}
 	adminsLock = sync.RWMutex{}
 	ReloadGames()
@@ -82,7 +91,7 @@ func StoreGameSession(session *Answer) error {
 	return DAO.storeGameSession(session)
 }
 
-func GetTopRating(gameId string) ([]RatingEntry, error) {
+func GetTopRating(gameId string) (*[]RatingEntry, error) {
 	return DAO.getGameTop(gameId, 100)
 }
 
@@ -103,4 +112,89 @@ func GetGameName(gameId string) (*string, bool) {
 	} else {
 		return nil, false
 	}
+}
+
+func GetAdmins() ([]*AdminUser, error) {
+	return DAO.getAdminUsers()
+}
+
+func RemoveAdmin(id int64) error {
+	return DAO.removeAdmin(id)
+}
+
+var idPattern = regexp.MustCompile("^(http://|https://)?(www.)?(vk\\.com|vkontakte\\.ru)/(id\\d+|[a-zA-Z0-9_.]+)$")
+
+func AddAdmin(idStr string) error {
+	client, err := CreateClient(VkKey)
+	if err != nil {
+		return err
+	}
+	match := idPattern.FindStringSubmatch(idStr)
+	if match == nil {
+		return errors.New("invalid ID")
+	}
+	users, err := client.GetUser(match[4])
+
+	if err != nil {
+		return err
+	}
+
+	if len(users) == 0 {
+		return errors.New("user not found")
+	}
+
+	user := AdminUser{
+		Id:    int64(users[0].UID),
+		Name:  users[0].FirstName + " " + users[0].LastName,
+		Image: users[0].Photo,
+	}
+
+	return DAO.addAdmin(&user)
+}
+
+func GetGroups() ([]*Group, error) {
+	return DAO.getGroups()
+}
+
+func AddGroup(apiKey string) error {
+	client, err := CreateClient(apiKey)
+	if err != nil {
+		return err
+	}
+	groups, err := client.GetGroup()
+	if err != nil {
+		return err
+	}
+	if len(groups) != 1 {
+		return errors.New("invalid token")
+	}
+	vkGroup := groups[0]
+	code, err := client.GetConfirmCode(vkGroup.Id)
+
+	if err != nil {
+		return err
+	}
+
+	secret := RandStringBytes(20)
+
+	group := Group{
+		Id:          vkGroup.Id,
+		ApiKey:      apiKey,
+		ConfirmCode: *code,
+		Name:        vkGroup.Name,
+		Secret:      secret,
+		Active:      false,
+		Image:       vkGroup.Photo,
+	}
+
+	err = DAO.addGroup(&group)
+	if err != nil {
+		return err
+	}
+
+	err = client.CreateListener(vkGroup.Id, PublicAddr+"/api/callback", "GOJ LISTENER", secret)
+	if err != nil {
+		DAO.removeGroup(group.Id)
+	}
+	return err
 }

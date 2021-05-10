@@ -1,6 +1,8 @@
 package rating
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+)
 
 func listGamesEndpoint(ctx *gin.Context) {
 

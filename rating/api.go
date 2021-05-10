@@ -27,7 +27,7 @@ func ConfigureAPI(r *gin.Engine, config *configuration.Configuration) {
 	api := r.Group("/api")
 	admin := api.Group("/admin")
 	api.Use(FilterPublic)
-	admin.Use(FilterAdmin)
+	admin.Use(FilterPublic, FilterAdmin)
 
 	api.GET("/me", meEndpoint)
 	api.GET("/rating", ratingEndpoint)

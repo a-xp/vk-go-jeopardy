@@ -153,7 +153,7 @@ func (dao AppDAO) getUserRating(gameId string, userId int64) *RatingEntry {
 	}
 }
 
-func (dao AppDAO) getGameTop(gameId string, limit int) ([]RatingEntry, error) {
+func (dao AppDAO) getGameTop(gameId string, limit int) (*[]RatingEntry, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	answers := dao.client.Database(dao.name).Collection("answers")
@@ -193,10 +193,10 @@ func (dao AppDAO) getGameTop(gameId string, limit int) ([]RatingEntry, error) {
 	for i, _ := range result {
 		result[i].Pos = i + 1
 	}
-	return result, nil
+	return &result, nil
 }
 
-func (dao AppDAO) getAdminUsers() ([]AdminUser, error) {
+func (dao AppDAO) getAdminUsers() ([]*AdminUser, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	admins := dao.client.Database(dao.name).Collection("admins")
@@ -205,7 +205,7 @@ func (dao AppDAO) getAdminUsers() ([]AdminUser, error) {
 		return nil, err
 	}
 	defer cur.Close(ctx)
-	var result []AdminUser
+	var result []*AdminUser
 	if err = cur.All(ctx, &result); err != nil {
 		return nil, err
 	}
@@ -226,4 +226,54 @@ func (dao AppDAO) getGameById(gameId string) (*Game, bool) {
 		return nil, false
 	}
 	return &result, true
+}
+
+func (dao AppDAO) removeAdmin(id int64) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	admins := dao.client.Database(dao.name).Collection("admins")
+	_, err := admins.DeleteOne(ctx, bson.M{"_id": id})
+	return err
+}
+
+func (dao AppDAO) addAdmin(user *AdminUser) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	admins := dao.client.Database(dao.name).Collection("admins")
+	opts := options.Replace().SetUpsert(true)
+	_, err := admins.ReplaceOne(ctx, bson.M{"_id": user.Id}, user, opts)
+	return err
+}
+
+func (dao AppDAO) getGroups() ([]*Group, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	groups := dao.client.Database(dao.name).Collection("groups")
+	cur, err := groups.Find(ctx, bson.D{})
+	if err != nil {
+		return nil, err
+	}
+	defer cur.Close(ctx)
+	var result []*Group
+	if err = cur.All(ctx, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (dao AppDAO) removeGroup(id int64) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	groups := dao.client.Database(dao.name).Collection("groups")
+	_, err := groups.DeleteOne(ctx, bson.M{"_id": id})
+	return err
+}
+
+func (dao AppDAO) addGroup(group *Group) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	groups := dao.client.Database(dao.name).Collection("groups")
+	opts := options.Replace().SetUpsert(true)
+	_, err := groups.ReplaceOne(ctx, bson.M{"_id": group.Id}, group, opts)
+	return err
 }

@@ -36,7 +36,7 @@ func ratingEndpoint(ctx *gin.Context) {
 		list, err := domain.GetTopRating(gameId)
 		if err == nil {
 			var userRating *domain.RatingEntry
-			for _, e := range list {
+			for _, e := range *list {
 				if e.UserId == userId {
 					userRating = &e
 					break

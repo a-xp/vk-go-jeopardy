@@ -35,12 +35,13 @@ type Game struct {
 }
 
 type Group struct {
-	Id          int64  `bson:"_id"`
-	ApiKey      string `bson:"apiKey"`
-	ConfirmCode string `bson:"confirmCode"`
-	Name        string
-	Secret      string
-	Active      bool
+	Id          int64  `bson:"_id" json:"id"`
+	ApiKey      string `bson:"apiKey" json:"apiKey"`
+	ConfirmCode string `bson:"confirmCode" json:"confirmCode"`
+	Name        string `json:"name"`
+	Secret      string `json:"secret"`
+	Active      bool   `json:"active"`
+	Image       string `json:"image"`
 }
 
 type User struct {
@@ -79,7 +80,7 @@ type RatingEntry struct {
 }
 
 type AdminUser struct {
-	Id    int64 `bson:"_id"`
-	Name  string
-	Image string
+	Id    int64  `bson:"_id" json:"id"`
+	Name  string `json:"name"`
+	Image string `json:"image"`
 }

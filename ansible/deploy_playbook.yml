@@ -44,6 +44,6 @@
   - name: Start service
     systemd:
       name: goj
-      state: started
+      state: restarted
       enabled: yes
       daemon_reload: yes
