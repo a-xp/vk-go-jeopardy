@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/event"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -26,7 +27,12 @@ func initDAO(cfg *configuration.Configuration) *AppDAO {
 		Path:     cfg.Mongo.Name,
 		RawQuery: cfg.Mongo.Options,
 	}
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(connectStr.String()))
+	cmdMonitor := &event.CommandMonitor{
+		Started: func(_ context.Context, evt *event.CommandStartedEvent) {
+			log.Print(evt.Command)
+		},
+	}
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(connectStr.String()).SetMonitor(cmdMonitor))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -39,16 +45,33 @@ func initDAO(cfg *configuration.Configuration) *AppDAO {
 	}
 }
 
-func (dao *AppDAO) loadGames() ([]Game, error) {
+func (dao *AppDAO) loadGameHeaders() ([]*GameHeader, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	games := dao.client.Database(dao.name).Collection("games")
-	cur, err := games.Find(ctx, bson.D{})
+	opts := options.Find().SetProjection(bson.M{"_id": 1, "name": 1, "active": 1, "new": 1})
+	cur, err := games.Find(ctx, bson.D{}, opts)
 	if err != nil {
 		return nil, err
 	}
 	defer cur.Close(ctx)
-	var result []Game
+	var result []*GameHeader
+	if err = cur.All(ctx, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (dao *AppDAO) loadActiveGames() ([]*Game, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	games := dao.client.Database(dao.name).Collection("games")
+	cur, err := games.Find(ctx, bson.D{{"active", true}})
+	if err != nil {
+		return nil, err
+	}
+	defer cur.Close(ctx)
+	var result []*Game
 	if err = cur.All(ctx, &result); err != nil {
 		return nil, err
 	}
@@ -99,7 +122,7 @@ func (dao AppDAO) storeUser(user *User) error {
 	return err
 }
 
-func (dao AppDAO) getGameSession(userId int64, gameId string) (*Answer, error) {
+func (dao AppDAO) getGameSession(userId int64, gameId *string) (*Answer, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	answers := dao.client.Database(dao.name).Collection("answers")
@@ -132,7 +155,7 @@ type AppDAO struct {
 	name   string
 }
 
-func (dao AppDAO) getUserRating(gameId string, userId int64) *RatingEntry {
+func (dao AppDAO) getUserRating(gameId *string, userId int64) *RatingEntry {
 	answer, err := dao.getGameSession(userId, gameId)
 	if err != nil || answer == nil {
 		return nil
@@ -153,7 +176,7 @@ func (dao AppDAO) getUserRating(gameId string, userId int64) *RatingEntry {
 	}
 }
 
-func (dao AppDAO) getGameTop(gameId string, limit int) (*[]RatingEntry, error) {
+func (dao AppDAO) getGameTop(gameId *string, limit int) ([]*RatingEntry, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	answers := dao.client.Database(dao.name).Collection("answers")
@@ -185,7 +208,7 @@ func (dao AppDAO) getGameTop(gameId string, limit int) (*[]RatingEntry, error) {
 		return nil, err
 	}
 	defer cur.Close(ctx)
-	var result []RatingEntry
+	var result []*RatingEntry
 	err = cur.All(ctx, &result)
 	if err != nil {
 		return nil, err
@@ -193,7 +216,7 @@ func (dao AppDAO) getGameTop(gameId string, limit int) (*[]RatingEntry, error) {
 	for i, _ := range result {
 		result[i].Pos = i + 1
 	}
-	return &result, nil
+	return result, nil
 }
 
 func (dao AppDAO) getAdminUsers() ([]*AdminUser, error) {
@@ -212,11 +235,11 @@ func (dao AppDAO) getAdminUsers() ([]*AdminUser, error) {
 	return result, nil
 }
 
-func (dao AppDAO) getGameById(gameId string) (*Game, bool) {
+func (dao AppDAO) getGameById(gameId *string) (*Game, bool) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	groups := dao.client.Database(dao.name).Collection("games")
-	oId, err := primitive.ObjectIDFromHex(gameId)
+	oId, err := primitive.ObjectIDFromHex(*gameId)
 	if err != nil {
 		return nil, false
 	}
@@ -275,5 +298,23 @@ func (dao AppDAO) addGroup(group *Group) error {
 	groups := dao.client.Database(dao.name).Collection("groups")
 	opts := options.Replace().SetUpsert(true)
 	_, err := groups.ReplaceOne(ctx, bson.M{"_id": group.Id}, group, opts)
+	return err
+}
+
+func (dao AppDAO) storeGame(game *Game) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	games := dao.client.Database(dao.name).Collection("games")
+	var err error
+	if game.Id != nil {
+		oId, err := primitive.ObjectIDFromHex(*game.Id)
+		if err != nil {
+			return err
+		}
+		game.Id = nil
+		_, err = games.ReplaceOne(ctx, bson.M{"_id": oId}, game)
+	} else {
+		_, err = games.InsertOne(ctx, game)
+	}
 	return err
 }

@@ -1,7 +1,7 @@
 [
     {
-        "_id": {"$oid": "606073639c1f4b4128443b1c"},
-        "active": true,
+        "active": false,
+        "new": true,
         "messages": {
             "gameComplete": "Вопросов больше не осталось. Вы набрали #X баллов!",
             "error": "Упс, кажется, произошла ошибка. Попробуйте ещё раз!",
@@ -12,13 +12,12 @@
             "wrongBranch": "Играть можно только в своей ветке комментариев",
             "unknownTopic": "Выберите следущий вопрос"
         },
-        "name": "История Нутеллы",
+        "name": "История Нутеллы 2.0",
         "post": {
-            "postId": 292,
+            "postId": 294,
             "postOwnerId": -196065343
         },
         "rules": {
-            "instantWin": false,
             "numTries": -1
         },
         "topics": [

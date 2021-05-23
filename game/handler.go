@@ -106,7 +106,7 @@ func getUser(vkId int64, client *vkapi.VKClient) (*domain.User, error) {
 	return user, nil
 }
 
-func getSession(userId int64, gameId string) (*domain.Answer, error) {
+func getSession(userId int64, gameId *string) (*domain.Answer, error) {
 	session, err := domain.GetGameSession(userId, gameId)
 	if err != nil {
 		return nil, err

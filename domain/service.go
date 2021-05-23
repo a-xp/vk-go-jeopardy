@@ -42,7 +42,7 @@ func ReloadAdmins() {
 }
 
 func ReloadGames() {
-	games, err := DAO.loadGames()
+	games, err := DAO.loadActiveGames()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -51,7 +51,7 @@ func ReloadGames() {
 	activeGames = make(map[GamePost]*Game)
 	for _, game := range games {
 		if game.Active {
-			activeGames[game.Post] = &game
+			activeGames[game.Post] = game
 		}
 	}
 }
@@ -83,7 +83,7 @@ func StoreUser(user *User) error {
 	return DAO.storeUser(user)
 }
 
-func GetGameSession(userId int64, gameId string) (*Answer, error) {
+func GetGameSession(userId int64, gameId *string) (*Answer, error) {
 	return DAO.getGameSession(userId, gameId)
 }
 
@@ -91,11 +91,11 @@ func StoreGameSession(session *Answer) error {
 	return DAO.storeGameSession(session)
 }
 
-func GetTopRating(gameId string) (*[]RatingEntry, error) {
+func GetTopRating(gameId *string) ([]*RatingEntry, error) {
 	return DAO.getGameTop(gameId, 100)
 }
 
-func GetUserRating(gameId string, userId int64) *RatingEntry {
+func GetUserRating(gameId *string, userId int64) *RatingEntry {
 	return DAO.getUserRating(gameId, userId)
 }
 
@@ -105,7 +105,7 @@ func IsAdmin(userId int64) bool {
 	return admins.Search(userId)
 }
 
-func GetGameName(gameId string) (*string, bool) {
+func GetGameName(gameId *string) (*string, bool) {
 	game, ok := DAO.getGameById(gameId)
 	if ok {
 		return &game.Name, true
@@ -197,4 +197,16 @@ func AddGroup(apiKey string) error {
 		DAO.removeGroup(group.Id)
 	}
 	return err
+}
+
+func GetGamesShort() ([]*GameHeader, error) {
+	return DAO.loadGameHeaders()
+}
+
+func GetGame(id *string) (*Game, bool) {
+	return DAO.getGameById(id)
+}
+
+func StoreGame(game *Game) error {
+	return DAO.storeGame(game)
 }

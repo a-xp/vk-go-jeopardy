@@ -33,6 +33,7 @@ func ConfigureAPI(r *gin.Engine, config *configuration.Configuration) {
 	api.GET("/rating", ratingEndpoint)
 
 	admin.GET("/games", listGamesEndpoint)
+	admin.GET("/games/:id", getGameEndpoint)
 	admin.DELETE("/games/:id", removeGameEndpoint)
 	admin.POST("/games", updateGameEndpoint)
 

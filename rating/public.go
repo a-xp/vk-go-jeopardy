@@ -31,19 +31,19 @@ func meEndpoint(ctx *gin.Context) {
 func ratingEndpoint(ctx *gin.Context) {
 	gameId := ctx.GetString("gameId")
 	userId := ctx.GetInt64("userId")
-	name, ok := domain.GetGameName(gameId)
+	name, ok := domain.GetGameName(&gameId)
 	if ok {
-		list, err := domain.GetTopRating(gameId)
+		list, err := domain.GetTopRating(&gameId)
 		if err == nil {
 			var userRating *domain.RatingEntry
-			for _, e := range *list {
+			for _, e := range list {
 				if e.UserId == userId {
-					userRating = &e
+					userRating = e
 					break
 				}
 			}
 			if userRating == nil {
-				userRating = domain.GetUserRating(gameId, userId)
+				userRating = domain.GetUserRating(&gameId, userId)
 			}
 			ctx.JSON(http.StatusOK, bson.M{"rating": list, "name": name, "userRating": userRating})
 		} else {

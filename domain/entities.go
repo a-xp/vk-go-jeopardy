@@ -1,15 +1,21 @@
 package domain
 
 type GamePost struct {
-	PostId      int64
-	PostOwnerId int64
+	PostId      int64 `json:"postId"`
+	PostOwnerId int64 `json:"postOwnerId"`
+	GroupId     int64 `json:"groupId"`
+}
+
+type GameHeader struct {
+	Id     *string `bson:"_id,omitempty" json:"id"`
+	Name   string  `bson:"name" json:"name"`
+	Active bool    `bson:"active" json:"active"`
+	New    bool    `bson:"new" json:"new"`
 }
 
 type Game struct {
-	Id       string `bson:"_id"`
-	Name     string
-	Active   bool
-	Messages struct {
+	GameHeader `bson:",inline"`
+	Messages   struct {
 		GameComplete   string `bson:"gameComplete"`
 		Error          string `bson:"error"`
 		TopicComplete  string `bson:"topicComplete"`
@@ -18,20 +24,20 @@ type Game struct {
 		Correct        string `bson:"correct"`
 		WrongBranch    string `bson:"wrongBranch"`
 		UnknownTopic   string `bson:"unknownTopic"`
-	}
-	Post  GamePost
+	} `json:"messages"`
+	Post  GamePost `json:"post"`
 	Rules struct {
 		InstantWin bool `bson:"instantWin"`
 		NumTries   int  `bson:"numTries"`
-	}
+	} `json:"rules"`
 	Topics []struct {
-		Name   string
-		Points int
+		Name   string `json:"name"`
+		Points int    `json:"points"`
 		Q      []struct {
-			Ans  []string
-			Text string
-		}
-	}
+			Ans  []string `json:"ans"`
+			Text string   `json:"text"`
+		} `json:"q"`
+	} `json:"topics"`
 }
 
 type Group struct {
@@ -65,8 +71,8 @@ type Answer struct {
 	CompleteTime int64 `bson:"completeTime"`
 	CurrentTopic int   `bson:"currentTopic"`
 	Score        int
-	GameId       string `bson:"gameId"`
-	UserId       int64  `bson:"userId"`
+	GameId       *string `bson:"gameId"`
+	UserId       int64   `bson:"userId"`
 	Topics       []*TopicResult
 }
 
