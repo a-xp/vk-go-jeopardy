@@ -13,16 +13,6 @@ import (
 	"strings"
 )
 
-type GameHeader struct {
-	Id   string
-	Name string
-}
-
-type ProfileDTO struct {
-	IsAdmin bool `json:"isAdmin"`
-	Games   []*GameHeader
-}
-
 func meEndpoint(ctx *gin.Context) {
 	userId := ctx.GetInt64("userId")
 	ctx.JSON(http.StatusOK, bson.M{"isAdmin": domain.IsAdmin(userId), "isValidClient": true})

@@ -1,7 +1,6 @@
-#VK Jeopardy backend service
+# VK Jeopardy backend service
 
-
-##Prepare remote server
+## Prepare remote server
 
 * Create Ubuntu Linux VM
 * Create inventory file. See infra/hosts_example.yml
@@ -12,7 +11,7 @@ cd ansible
 ansible-playbook playbook.yml -i <inventory file>
 ```
 
-##Build And Deploy
+## Build And Deploy
 
 Run:
 

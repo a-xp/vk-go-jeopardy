@@ -7,10 +7,11 @@ type GamePost struct {
 }
 
 type GameHeader struct {
-	Id     *string `bson:"_id,omitempty" json:"id"`
-	Name   string  `bson:"name" json:"name"`
-	Active bool    `bson:"active" json:"active"`
-	New    bool    `bson:"new" json:"new"`
+	Id        *string `bson:"_id,omitempty" json:"id"`
+	Name      string  `bson:"name" json:"name"`
+	Active    bool    `bson:"active" json:"active"`
+	New       bool    `bson:"new" json:"new"`
+	RatingUrl *string
 }
 
 type Game struct {

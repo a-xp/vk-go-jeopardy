@@ -24,6 +24,7 @@ type Configuration struct {
 	VkApp struct {
 		Secret string
 		Key    string
+		Url    string
 	}
 	MockResponse    bool `yaml:"mockResponse"`
 	ValidateRequest bool `yaml:"validateRequest"`

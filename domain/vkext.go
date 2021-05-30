@@ -22,6 +22,20 @@ type GroupInfo struct {
 	Photo string `json:"photo_50"`
 }
 
+type CallbackServerInfo struct {
+	Id    int64  `json:"id"`
+	Title string `json:"title"`
+}
+
+type CallbackServersResponse struct {
+	Count int                   `json:"count"`
+	Items []*CallbackServerInfo `json:"items"`
+}
+
+type AddCallbackServerResponse struct {
+	ServerId int64 `json:"server_id"`
+}
+
 func CreateClient(apiKey string) (*VKExt, error) {
 	client, err := vkapi.NewVKClientWithToken(apiKey, nil, false)
 	if err != nil {
@@ -40,18 +54,71 @@ func (client *VKExt) GetConfirmCode(id int64) (*string, error) {
 		return nil, err
 	}
 	var code GroupCodeResponse
-	json.Unmarshal(resp.Response, &code)
+	err = json.Unmarshal(resp.Response, &code)
+	if err != nil {
+		return nil, err
+	}
 	return &code.Code, nil
 }
 
-func (client *VKExt) CreateListener(groupId int64, cbUrl string, name string, secret string) error {
+func (client *VKExt) AddCallbackServer(groupId int64, cbUrl string, name string, secret string) (int64, error) {
 	v := url.Values{}
 	v.Add("group_id", strconv.FormatInt(groupId, 10))
 	v.Add("url", cbUrl)
 	v.Add("title", name)
 	v.Add("secret_key", secret)
 
-	_, err := client.client.MakeRequest("groups.addCallbackServer", v)
+	resp, err := client.client.MakeRequest("groups.addCallbackServer", v)
+
+	if err != nil {
+		return 0, err
+	}
+	var result AddCallbackServerResponse
+	err = json.Unmarshal(resp.Response, &result)
+	if err != nil {
+		return 0, err
+	}
+	return result.ServerId, nil
+}
+
+func (client *VKExt) GetCallbackServers(groupId int64) ([]*CallbackServerInfo, error) {
+	v := url.Values{}
+	v.Add("group_id", strconv.FormatInt(groupId, 10))
+
+	resp, err := client.client.MakeRequest("groups.getCallbackServers", v)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var result CallbackServersResponse
+	err = json.Unmarshal(resp.Response, &result)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return result.Items, nil
+}
+
+func (client *VKExt) DeleteCallbackServer(groupId int64, serverId int64) error {
+	v := url.Values{}
+	v.Add("group_id", strconv.FormatInt(groupId, 10))
+	v.Add("server_id", strconv.FormatInt(serverId, 10))
+
+	_, err := client.client.MakeRequest("groups.deleteCallbackServer", v)
+
+	return err
+}
+
+func (client *VKExt) SetCallbackSettings(groupId int64, serverId int64) error {
+	v := url.Values{}
+	v.Add("group_id", strconv.FormatInt(groupId, 10))
+	v.Add("server_id", strconv.FormatInt(serverId, 10))
+	v.Add("wall_reply_new", "1")
+
+	_, err := client.client.MakeRequest("groups.setCallbackSettings", v)
+
 	return err
 }
 
@@ -63,8 +130,10 @@ func (client *VKExt) GetGroup() ([]*GroupInfo, error) {
 	}
 
 	var items []*GroupInfo
-	json.Unmarshal(resp.Response, &items)
-
+	err = json.Unmarshal(resp.Response, &items)
+	if err != nil {
+		return nil, err
+	}
 	return items, nil
 }
 
@@ -80,7 +149,9 @@ func (client *VKExt) GetUser(id string) ([]*vkapi.User, error) {
 	}
 
 	var userList []*vkapi.User
-	json.Unmarshal(resp.Response, &userList)
-
+	err = json.Unmarshal(resp.Response, &userList)
+	if err != nil {
+		return nil, err
+	}
 	return userList, nil
 }

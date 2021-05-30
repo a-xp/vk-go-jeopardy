@@ -4,46 +4,46 @@
   gather_facts: false
 
   tasks:
-  - name: create goj group
-    group:
-      name: goj
-      state: present
+    - name: create goj group
+      group:
+        name: goj
+        state: present
 
-  - name: create goj user
-    user:
-      name: goj
-      groups: goj
-      shell: /sbin/nologin
-      append: yes
-      state: present
-      create_home: yes
+    - name: create goj user
+      user:
+        name: goj
+        groups: goj
+        shell: /sbin/nologin
+        append: yes
+        state: present
+        create_home: yes
 
-  - name: Copy systemd service file to server
-    copy:
-      src: templates/goj.service
-      dest: /etc/systemd/system
-      owner: root
-      group: root
+    - name: Copy systemd service file to server
+      copy:
+        src: templates/goj.service
+        dest: /etc/systemd/system
+        owner: root
+        group: root
 
-  - name: Copy binary to server
-    copy:
-      src: ../deploy/goj
-      dest: /usr/local/bin
-      mode: 0755
-      owner: root
-      group: root
+    - name: Copy binary to server
+      copy:
+        src: ../deploy/goj
+        dest: /usr/local/bin
+        mode: 0755
+        owner: root
+        group: root
 
-  - name: Copy configuration to server
-    copy:
-      src: ../deploy/application.yml
-      dest: /home/goj
-      mode: 0755
-      owner: goj
-      group: goj
+    - name: Copy configuration to server
+      copy:
+        src: ../deploy/application.yml
+        dest: /home/goj
+        mode: 0755
+        owner: goj
+        group: goj
 
-  - name: Start service
-    systemd:
-      name: goj
-      state: restarted
-      enabled: yes
-      daemon_reload: yes
+    - name: Start service
+      systemd:
+        name: goj
+        state: restarted
+        enabled: yes
+        daemon_reload: yes

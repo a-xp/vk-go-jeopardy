@@ -2,6 +2,7 @@ package domain
 
 import (
 	"errors"
+	"fmt"
 	"goj/configuration"
 	"log"
 	"math/rand"
@@ -18,12 +19,15 @@ var adminsLock sync.RWMutex
 var MockResponse bool
 var VkKey string
 var PublicAddr string
+var RatingAppUrl string
+var DEFAULT_LISTENER_NAME = "GOJ LISTENER"
 
 func InitEngine(cfg *configuration.Configuration) {
 	DAO = initDAO(cfg)
 	rand.Seed(time.Now().UnixNano())
 	MockResponse = cfg.MockResponse
 	PublicAddr = cfg.Http.PublicAddr
+	RatingAppUrl = cfg.VkApp.Url
 	VkKey = cfg.VkApp.Key
 	gamesLock = sync.RWMutex{}
 	adminsLock = sync.RWMutex{}
@@ -156,6 +160,18 @@ func GetGroups() ([]*Group, error) {
 	return DAO.getGroups()
 }
 
+func RemoveCallbackServer(client *VKExt, groupId int64) error {
+	servers, err := client.GetCallbackServers(groupId)
+	for _, s := range servers {
+		if s.Title == DEFAULT_LISTENER_NAME {
+			if client.DeleteCallbackServer(groupId, s.Id) != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
 func AddGroup(apiKey string) error {
 	client, err := CreateClient(apiKey)
 	if err != nil {
@@ -169,6 +185,12 @@ func AddGroup(apiKey string) error {
 		return errors.New("invalid token")
 	}
 	vkGroup := groups[0]
+
+	err = RemoveCallbackServer(client, vkGroup.Id)
+	if err != nil {
+		return err
+	}
+
 	code, err := client.GetConfirmCode(vkGroup.Id)
 
 	if err != nil {
@@ -192,15 +214,29 @@ func AddGroup(apiKey string) error {
 		return err
 	}
 
-	err = client.CreateListener(vkGroup.Id, PublicAddr+"/api/callback", "GOJ LISTENER", secret)
+	serverId, err := client.AddCallbackServer(vkGroup.Id, PublicAddr+"/api/callback", DEFAULT_LISTENER_NAME, secret)
 	if err != nil {
-		DAO.removeGroup(group.Id)
+		err2 := DAO.removeGroup(group.Id)
+		log.Print(err2)
+	}
+	err = client.SetCallbackSettings(vkGroup.Id, serverId)
+	if err != nil {
+		err2 := DAO.removeGroup(group.Id)
+		log.Print(err2)
 	}
 	return err
 }
 
 func GetGamesShort() ([]*GameHeader, error) {
-	return DAO.loadGameHeaders()
+	list, err := DAO.loadGameHeaders()
+	if err != nil {
+		return nil, err
+	}
+	for i, v := range list {
+		adr := fmt.Sprintf("%s#%d", RatingAppUrl, v.Id)
+		list[i].RatingUrl = &adr
+	}
+	return list, nil
 }
 
 func GetGame(id *string) (*Game, bool) {
@@ -208,5 +244,9 @@ func GetGame(id *string) (*Game, bool) {
 }
 
 func StoreGame(game *Game) error {
-	return DAO.storeGame(game)
+	err := DAO.storeGame(game)
+	if err == nil {
+		ReloadGames()
+	}
+	return err
 }
