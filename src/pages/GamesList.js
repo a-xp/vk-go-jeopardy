@@ -1,4 +1,4 @@
-import {Button, CellButton, Div, Group, Panel, PanelHeader, PullToRefresh, SimpleCell} from "@vkontakte/vkui";
+import {Button, Div, Group, Link, Panel, PanelHeader, PullToRefresh, SimpleCell} from "@vkontakte/vkui";
 import {useCallback, useContext} from "react";
 import {GlobalActions} from "../App";
 
@@ -21,9 +21,10 @@ function GamesList({onOpen, onRefresh, onNew, list, loading}) {
                     {list && list.map(game =>
                         <SimpleCell key={game.id}
                                     onClick={() => onOpen(game.id, 0)}
+                                    indicator={<Div>{game.active ? 'Активна' : (game.new ? 'Новая' : 'Архив')}</Div>}
                                     description={game.id}
-                                    after={<CellButton data-id={game.id} onClick={onLinkCopy}>Ссылка</CellButton>}
-                                    indicator={game.active ? 'Активна' : (game.new ? 'Новая' : 'Архив')}>
+                                    after={<Link onClick={e => e.stopPropagation()} href={game.ratingUrl}
+                                                 target="_blank">Рейтинг</Link>}>
                             {game.name}
                         </SimpleCell>
                     )}

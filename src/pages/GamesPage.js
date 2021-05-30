@@ -49,7 +49,7 @@ function GamesPage() {
         } catch (e) {
             globalActions.openSnack('Ошибка сохранения');
         }
-    }, [globalActions, setCurrentGame]);
+    }, [globalActions, setCurrentGame, onReload]);
 
     const onNew = useCallback(() => {
         setCurrentGame({
