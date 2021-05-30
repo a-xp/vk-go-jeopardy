@@ -11,7 +11,7 @@ type GameHeader struct {
 	Name      string  `bson:"name" json:"name"`
 	Active    bool    `bson:"active" json:"active"`
 	New       bool    `bson:"new" json:"new"`
-	RatingUrl *string
+	RatingUrl *string `json:"ratingUrl"`
 }
 
 type Game struct {
