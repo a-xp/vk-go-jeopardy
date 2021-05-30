@@ -69,12 +69,13 @@ func FindGroupById(id int64) (*Group, bool) {
 	return group, exists
 }
 
-func GetActiveGame(postOwnerId int64, postId int64) (*Game, bool) {
+func GetActiveGame(groupId, postOwnerId int64, postId int64) (*Game, bool) {
 	gamesLock.RLock()
 	defer gamesLock.RUnlock()
 	game, ok := activeGames[GamePost{
 		PostId:      postId,
 		PostOwnerId: postOwnerId,
+		GroupId:     groupId,
 	}]
 	return game, ok
 }
@@ -233,7 +234,7 @@ func GetGamesShort() ([]*GameHeader, error) {
 		return nil, err
 	}
 	for i, v := range list {
-		adr := fmt.Sprintf("%s#%d", RatingAppUrl, v.Id)
+		adr := fmt.Sprintf("%s#%s", RatingAppUrl, *v.Id)
 		list[i].RatingUrl = &adr
 	}
 	return list, nil
@@ -249,4 +250,17 @@ func StoreGame(game *Game) error {
 		ReloadGames()
 	}
 	return err
+}
+
+func RemoveGroup(groupId int64) error {
+	group, found := DAO.findGroupById(groupId)
+	if found {
+		client, err := CreateClient(group.ApiKey)
+		if err == nil {
+			RemoveCallbackServer(client, groupId)
+		}
+		err = DAO.removeGroup(groupId)
+		return err
+	}
+	return nil
 }

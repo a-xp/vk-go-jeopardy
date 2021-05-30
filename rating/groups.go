@@ -5,6 +5,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"goj/domain"
 	"net/http"
+	"strconv"
 )
 
 func listGroupsEndpoint(ctx *gin.Context) {
@@ -22,7 +23,18 @@ func listGroupsEndpoint(ctx *gin.Context) {
 }
 
 func removeGroupEndpoint(ctx *gin.Context) {
-
+	idStr := ctx.Param("id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		ctx.Status(http.StatusBadRequest)
+		return
+	}
+	err = domain.RemoveGroup(id)
+	if err == nil {
+		ctx.Status(http.StatusAccepted)
+	} else {
+		ctx.Status(http.StatusInternalServerError)
+	}
 }
 
 type AddGroupRequest struct {

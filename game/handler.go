@@ -56,7 +56,7 @@ func handleWallReply(event *Event) {
 	if !exists || group.Secret != event.Secret {
 		return
 	}
-	game, exists := domain.GetActiveGame(event.Details.PostOwnerId, event.Details.PostId)
+	game, exists := domain.GetActiveGame(event.GroupId, event.Details.PostOwnerId, event.Details.PostId)
 	if !exists {
 		return
 	}
