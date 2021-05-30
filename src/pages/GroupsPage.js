@@ -39,7 +39,7 @@ function GroupsPage() {
 
     const onRemove = useCallback(async (id) => {
         try {
-            await api.deleteGame(id);
+            await api.deleteGroup(id);
             return onRefresh();
         } catch (e) {
             globalActions.openSnack("Не удалось удалить сообщество")

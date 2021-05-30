@@ -5,14 +5,6 @@ import {GlobalActions} from "../App";
 
 function GamesList({onOpen, onRefresh, onNew, list, loading}) {
 
-    const globalActions = useContext(GlobalActions);
-
-    const onLinkCopy = useCallback((e) => {
-        const id = e.currentTarget.getAttribute('data-id');
-        globalActions.copyGameUrl(id);
-        e.stopPropagation();
-    }, [globalActions]);
-
     return (
         <Panel id="games">
             <PanelHeader>Викторины</PanelHeader>
