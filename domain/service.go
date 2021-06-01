@@ -70,13 +70,12 @@ func FindGroupById(id int64) (*Group, bool) {
 	return group, exists
 }
 
-func GetActiveGame(groupId, postOwnerId int64, postId int64) (*Game, bool) {
+func GetActiveGame(postOwnerId int64, postId int64) (*Game, bool) {
 	gamesLock.RLock()
 	defer gamesLock.RUnlock()
 	game, ok := activeGames[GamePost{
 		PostId:      postId,
 		PostOwnerId: postOwnerId,
-		GroupId:     groupId,
 	}]
 	return game, ok
 }

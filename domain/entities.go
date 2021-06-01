@@ -3,7 +3,6 @@ package domain
 type GamePost struct {
 	PostId      int64 `json:"postId"`
 	PostOwnerId int64 `json:"postOwnerId"`
-	GroupId     int64 `json:"groupId"`
 }
 
 type GameHeader struct {
