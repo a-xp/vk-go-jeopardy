@@ -5,13 +5,17 @@ export function formatRusNumerics(n, forms) {
     return forms[1];
 }
 
-export function formatPostId({groupId, postOwnerId, postId}) {
-    return groupId ? `https://vk.com/club${groupId}?w=wall${postOwnerId}_${postId}` : '';
+export function formatPostId({postOwnerId, postId}) {
+    return postOwnerId ? `https://vk.com/wall${postOwnerId}_${postId}` : '';
 }
 
 export function parsePostId(link) {
-    const result = /vk\.com\/club(\d+)\?w=wall(-\d+)_(\d+)/.exec(link)
-    return result ? {groupId: parseInt(result[1]), postOwnerId: parseInt(result[2]), postId: parseInt(result[3])} : null
+    let result = /vk\.com\/club\d+\?w=wall(-\d+)_(\d+)/.exec(link);
+    if (result) {
+        return {postOwnerId: parseInt(result[1]), postId: parseInt(result[2])};
+    }
+    result = /vk\.com\/wall(-\d+)_(\d+)/.exec(link);
+    return result ? {postOwnerId: parseInt(result[1]), postId: parseInt(result[2])} : null
 }
 
 export function hasText(str) {
