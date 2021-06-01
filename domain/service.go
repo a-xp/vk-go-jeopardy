@@ -7,6 +7,7 @@ import (
 	"log"
 	"math/rand"
 	"regexp"
+	"strings"
 	"sync"
 	"time"
 )
@@ -245,6 +246,13 @@ func GetGame(id *string) (*Game, bool) {
 }
 
 func StoreGame(game *Game) error {
+	game.Name = strings.TrimSpace(game.Name)
+	for i, t := range game.Topics {
+		game.Topics[i].Name = strings.TrimSpace(t.Name)
+		for j, q := range t.Q {
+			game.Topics[i].Q[j].Text = strings.TrimSpace(q.Text)
+		}
+	}
 	err := DAO.storeGame(game)
 	if err == nil {
 		ReloadGames()

@@ -142,7 +142,7 @@ func (dao AppDAO) storeGameSession(answer *Answer) error {
 	defer cancel()
 	answers := dao.client.Database(dao.name).Collection("answers")
 	if answer.Id == nil {
-		newId := fmt.Sprintf("%s_%d", answer.GameId, answer.UserId)
+		newId := fmt.Sprintf("%s_%d", *answer.GameId, answer.UserId)
 		answer.Id = &newId
 	}
 	opts := options.Replace().SetUpsert(true)
@@ -182,12 +182,12 @@ func (dao AppDAO) getGameTop(gameId *string, limit int) ([]*RatingEntry, error) 
 	answers := dao.client.Database(dao.name).Collection("answers")
 	cur, err := answers.Aggregate(ctx,
 		bson.A{
-			bson.M{"$match": bson.M{"gameid": gameId}},
+			bson.M{"$match": bson.M{"gameId": gameId}},
 			bson.M{"$sort": bson.M{"score": -1, "completeTime": 1}},
 			bson.M{"$limit": limit},
 			bson.M{"$lookup": bson.M{
 				"from":         "users",
-				"localField":   "userid",
+				"localField":   "userId",
 				"foreignField": "_id",
 				"as":           "user",
 			}},
@@ -201,7 +201,7 @@ func (dao AppDAO) getGameTop(gameId *string, limit int) ([]*RatingEntry, error) 
 					},
 				},
 			},
-			bson.M{"$project": bson.M{"img": 1, "_id": 0, "name": 1, "lastname": 1, "score": 1, "userid": 1}},
+			bson.M{"$project": bson.M{"img": 1, "_id": 0, "name": 1, "lastname": 1, "score": 1, "userId": 1}},
 		},
 	)
 	if err != nil {

@@ -56,7 +56,7 @@ func searchTopicByText(ctx *processingContext) (int, bool) {
 	found := false
 	if err != nil {
 		for num, topic := range ctx.game.Topics {
-			if strings.EqualFold(topic.Name, ctx.text) {
+			if strings.ToLower(topic.Name) == ctx.text {
 				topicNum = num
 				found = true
 				break
