@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 func meEndpoint(ctx *gin.Context) {
@@ -18,30 +19,58 @@ func meEndpoint(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, bson.M{"isAdmin": domain.IsAdmin(userId), "isValidClient": true})
 }
 
+var ratings sync.Map
+var names sync.Map
+
+func DropNamesCache(groupId string) {
+	names.Delete(groupId)
+}
+
+func DropRatingCache(groupId string) {
+	ratings.Delete(groupId)
+}
+
 func ratingEndpoint(ctx *gin.Context) {
 	gameId := ctx.GetString("gameId")
 	userId := ctx.GetInt64("userId")
-	name, ok := domain.GetGameName(&gameId)
+	v, ok := names.Load(gameId)
+	var name string
 	if ok {
-		list, err := domain.GetTopRating(&gameId)
-		if err == nil {
-			var userRating *domain.RatingEntry
-			for _, e := range list {
-				if e.UserId == userId {
-					userRating = e
-					break
-				}
-			}
-			if userRating == nil {
-				userRating = domain.GetUserRating(&gameId, userId)
-			}
-			ctx.JSON(http.StatusOK, bson.M{"rating": list, "name": name, "userRating": userRating})
-		} else {
-			ctx.Status(http.StatusInternalServerError)
-		}
+		name = v.(string)
 	} else {
-		ctx.Status(http.StatusNoContent)
+		str, ok := domain.GetGameName(&gameId)
+		if !ok {
+			ctx.Status(http.StatusNoContent)
+			return
+		}
+		name = *str
+		names.Store(gameId, name)
 	}
+	v, ok = ratings.Load(gameId)
+	var list []*domain.RatingEntry
+	if !ok {
+		var err error
+		list, err = domain.GetTopRating(&gameId)
+		if err != nil {
+			ctx.Status(http.StatusInternalServerError)
+			return
+		}
+		ratings.Store(gameId, list)
+	} else {
+		list = v.([]*domain.RatingEntry)
+	}
+	var userRating *domain.RatingEntry
+	for _, e := range list {
+		if e.UserId == userId {
+			userRating = e
+			break
+		}
+	}
+	if userRating == nil {
+		userRating = domain.GetUserRating(&gameId, userId)
+	}
+	ctx.JSON(http.StatusOK, bson.M{"rating": list, "name": name, "userRating": userRating})
+
 }
 
 func FilterPublic(ctx *gin.Context) {

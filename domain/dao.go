@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/event"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -27,12 +26,7 @@ func initDAO(cfg *configuration.Configuration) *AppDAO {
 		Path:     cfg.Mongo.Name,
 		RawQuery: cfg.Mongo.Options,
 	}
-	cmdMonitor := &event.CommandMonitor{
-		Started: func(_ context.Context, evt *event.CommandStartedEvent) {
-			log.Print(evt.Command)
-		},
-	}
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(connectStr.String()).SetMonitor(cmdMonitor))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(connectStr.String()))
 	if err != nil {
 		log.Fatal(err)
 	}

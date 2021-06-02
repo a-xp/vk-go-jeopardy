@@ -21,7 +21,18 @@ var MockResponse bool
 var VkKey string
 var PublicAddr string
 var RatingAppUrl string
-var DEFAULT_LISTENER_NAME = "GOJ LISTENER"
+var DefaultListenerName = "GOJ LISTENER"
+
+var ratingUpdateCb []func(id string)
+var gameUpdateCb []func(id string)
+
+func AddGameUpdateCallback(f func(id string)) {
+	gameUpdateCb = append(gameUpdateCb, f)
+}
+
+func AddRatingUpdateCallback(f func(id string)) {
+	ratingUpdateCb = append(ratingUpdateCb, f)
+}
 
 func InitEngine(cfg *configuration.Configuration) {
 	DAO = initDAO(cfg)
@@ -93,6 +104,9 @@ func GetGameSession(userId int64, gameId *string) (*Answer, error) {
 }
 
 func StoreGameSession(session *Answer) error {
+	for _, cb := range ratingUpdateCb {
+		cb(*session.GameId)
+	}
 	return DAO.storeGameSession(session)
 }
 
@@ -164,7 +178,7 @@ func GetGroups() ([]*Group, error) {
 func RemoveCallbackServer(client *VKExt, groupId int64) error {
 	servers, err := client.GetCallbackServers(groupId)
 	for _, s := range servers {
-		if s.Title == DEFAULT_LISTENER_NAME {
+		if s.Title == DefaultListenerName {
 			if client.DeleteCallbackServer(groupId, s.Id) != nil {
 				return err
 			}
@@ -215,7 +229,7 @@ func AddGroup(apiKey string) error {
 		return err
 	}
 
-	serverId, err := client.AddCallbackServer(vkGroup.Id, PublicAddr+"/api/callback", DEFAULT_LISTENER_NAME, secret)
+	serverId, err := client.AddCallbackServer(vkGroup.Id, PublicAddr+"/api/callback", DefaultListenerName, secret)
 	if err != nil {
 		err2 := DAO.removeGroup(group.Id)
 		log.Print(err2)
@@ -245,6 +259,11 @@ func GetGame(id *string) (*Game, bool) {
 }
 
 func StoreGame(game *Game) error {
+	if game.Id != nil {
+		for _, cb := range gameUpdateCb {
+			cb(*game.Id)
+		}
+	}
 	game.Name = strings.TrimSpace(game.Name)
 	for i, t := range game.Topics {
 		game.Topics[i].Name = strings.TrimSpace(t.Name)

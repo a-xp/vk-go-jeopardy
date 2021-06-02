@@ -1,7 +1,6 @@
 package game
 
 import (
-	vkapi "github.com/himidori/golang-vk-api"
 	"goj/domain"
 	"log"
 	"math/rand"
@@ -17,7 +16,7 @@ type processingContext struct {
 	user    *domain.User
 	group   *domain.Group
 	session *domain.Answer
-	client  *vkapi.VKClient
+	client  *domain.VKExt
 }
 
 func playSession(ctx *processingContext) {

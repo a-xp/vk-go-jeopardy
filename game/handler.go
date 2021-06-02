@@ -82,7 +82,7 @@ func handleWallReply(event *Event) {
 		user:    user,
 		group:   group,
 		session: session,
-		client:  client,
+		client:  &domain.VKExt{Client: client},
 	})
 }
 

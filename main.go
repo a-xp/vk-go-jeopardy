@@ -18,6 +18,8 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 	AppConfig = configuration.LoadConfigFile()
 	domain.InitEngine(AppConfig)
+	domain.AddRatingUpdateCallback(rating.DropRatingCache)
+	domain.AddGameUpdateCallback(rating.DropNamesCache)
 	defer domain.StopEngine()
 	gin.SetMode(AppConfig.Http.Mode)
 	r := gin.Default()
