@@ -81,7 +81,7 @@ function GroupsPage() {
                         </Cell>)}
                 </PullToRefresh>}
                 <FormLayout>
-                    <FormItem top="Ключ доступа API">
+                    <FormItem top="Ключ доступа API сообщества" bottom="Необходимы права на управление сообществом, стеной и сообщениями">
                         <Input getRef={apiKeyRef}/>
                     </FormItem>
                     <FormItem>
