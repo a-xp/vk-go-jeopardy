@@ -138,7 +138,11 @@ func GetAdmins() ([]*AdminUser, error) {
 }
 
 func RemoveAdmin(id int64) error {
-	return DAO.removeAdmin(id)
+	err := DAO.removeAdmin(id)
+	if err == nil {
+		ReloadAdmins()
+	}
+	return err
 }
 
 var idPattern = regexp.MustCompile("^(http://|https://)?(www.)?(vk\\.com|vkontakte\\.ru)/(id\\d+|[a-zA-Z0-9_.]+)$")
@@ -168,7 +172,13 @@ func AddAdmin(idStr string) error {
 		Image: users[0].Photo,
 	}
 
-	return DAO.addAdmin(&user)
+	err = DAO.addAdmin(&user)
+
+	if err == nil {
+		ReloadAdmins()
+	}
+
+	return err
 }
 
 func GetGroups() ([]*Group, error) {
