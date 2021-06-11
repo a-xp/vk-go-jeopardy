@@ -1,7 +1,16 @@
 import config from './config';
 import {fetch} from 'whatwg-fetch';
 
-const vkParams = window.location.search.substring(1) + (window.location.hash ? '&game=' + window.location.hash.substring(1) : '');
+let vkParams;
+try {
+    vkParams = window.location.search.substring(1) + (window.location.hash ? '&game=' + window.location.hash.substring(1) : '');
+} catch (e) {
+    console.error(e);
+}
+
+function sendError(msg) {
+    return fetch(config.api + '/log-error?msg=' + encodeURIComponent(msg));
+}
 
 async function makeRequest(method, url, params = {}) {
 
@@ -80,7 +89,8 @@ function addGroup(group) {
 
 const api = {
     getRating, getProfile, getGames, deleteGame, updateGame, getGame,
-    getAdmins, addAdmin, deleteAdmin, getGroups, deleteGroup, addGroup
+    getAdmins, addAdmin, deleteAdmin, getGroups, deleteGroup, addGroup,
+    sendError
 }
 
 export default api;

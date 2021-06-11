@@ -41,10 +41,6 @@ function App() {
                 setSnack(<Snackbar
                     before={<Icon12Cancel fill="red" width="16" height="16"/>}
                     onClose={() => setSnack(null)}>{text}</Snackbar>)
-            },
-            copyGameUrl(id) {
-                const url = publicUrl + '#' + id;
-                return navigator.clipboard.writeText(url);
             }
         }
     }, [setSnack, publicUrl]);
