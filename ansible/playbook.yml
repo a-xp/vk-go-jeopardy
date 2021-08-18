@@ -72,6 +72,9 @@
         - iptables-persistent
         - netfilter-persistent
 
+    - name: Store rules
+      shell: /etc/init.d/netfilter-persistent save
+
     - name: Install nginx
       apt: name=nginx state=latest
 

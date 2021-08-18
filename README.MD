@@ -21,3 +21,16 @@ cd ansible
 ansible-playbook deploy_playbook.yml -i <inventory file> 
 ```
 
+## Deploy frontend
+
+```shell
+cd ansible
+./deploy.sh f  
+```
+
+## Deploy backend
+
+```shell
+cd ansible
+./deploy.sh b  
+```
