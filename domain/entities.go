@@ -27,8 +27,8 @@ type Game struct {
 	} `json:"messages"`
 	Post  GamePost `json:"post"`
 	Rules struct {
-		InstantWin bool `bson:"instantWin"`
-		NumTries   int  `bson:"numTries"`
+		InstantWin bool `bson:"instantWin" json:"instantWin"`
+		NumTries   int  `bson:"numTries" json:"numTries"`
 	} `json:"rules"`
 	Topics []struct {
 		Name   string `json:"name"`
