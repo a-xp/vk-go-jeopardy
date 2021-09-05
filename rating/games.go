@@ -35,6 +35,7 @@ func updateGameEndpoint(ctx *gin.Context) {
 	err := ctx.BindJSON(&game)
 	if err != nil {
 		ctx.Status(http.StatusBadRequest)
+		return
 	}
 	err = domain.StoreGame(&game)
 	if err != nil {
