@@ -1,6 +1,10 @@
 package domain
 
-import "math/rand"
+import (
+	"math/rand"
+	"regexp"
+	"strings"
+)
 
 type Int64Slice []int64
 
@@ -21,4 +25,13 @@ func RandStringBytes(n int) string {
 		b[i] = letterBytes[rand.Intn(len(letterBytes))]
 	}
 	return string(b)
+}
+
+var spaceSymbols = regexp.MustCompile("[:—\\-–]+|\\s+")
+
+func FilterAnswer(answer string) string {
+	result := spaceSymbols.ReplaceAllString(answer, " ")
+	result = strings.TrimSpace(result)
+	result = strings.ToLower(result)
+	return result
 }

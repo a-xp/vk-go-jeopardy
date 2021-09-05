@@ -8,7 +8,6 @@ import (
 	"log"
 	"net/http"
 	"regexp"
-	"strings"
 )
 
 type Event struct {
@@ -27,6 +26,12 @@ type WallReplyDetails struct {
 	Text         string
 }
 
+// HandleVKEvent
+/**
+  Обрабатывает ивенты от VK
+  confirmation: Подтверждение привязки слушателя событий
+  wall_reply_new: Ответ на стене сообщества
+*/
 func HandleVKEvent(c *gin.Context) {
 	var event Event
 	if err := c.ShouldBindBodyWith(&event, binding.JSON); err != nil {
@@ -124,9 +129,11 @@ func getSession(userId int64, gameId *string) (*domain.Answer, error) {
 	return session, nil
 }
 
+var replyPattern = regexp.MustCompile("^(.+,\\s*)")
+
 func filterText(original string) (string, bool) {
-	replyPattern := regexp.MustCompile("^(.+,\\s*)")
-	result := strings.ToLower(strings.TrimSpace(replyPattern.ReplaceAllString(original, "")))
+	result := replyPattern.ReplaceAllString(original, "")
+	result = domain.FilterAnswer(result)
 	if len(result) > 0 {
 		return result, true
 	} else {

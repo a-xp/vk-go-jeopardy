@@ -276,9 +276,14 @@ func StoreGame(game *Game) error {
 	}
 	game.Name = strings.TrimSpace(game.Name)
 	for i, t := range game.Topics {
-		game.Topics[i].Name = strings.TrimSpace(t.Name)
+		game.Topics[i].Name = FilterAnswer(t.Name)
 		for j, q := range t.Q {
 			game.Topics[i].Q[j].Text = strings.TrimSpace(q.Text)
+			if game.Topics[i].Q[j].Ans != nil {
+				for k, ans := range game.Topics[i].Q[j].Ans {
+					game.Topics[i].Q[j].Ans[k] = FilterAnswer(ans)
+				}
+			}
 		}
 	}
 	err := DAO.storeGame(game)
@@ -293,7 +298,7 @@ func RemoveGroup(groupId int64) error {
 	if found {
 		client, err := CreateClient(group.ApiKey)
 		if err == nil {
-			RemoveCallbackServer(client, groupId)
+			_ = RemoveCallbackServer(client, groupId)
 		}
 		err = DAO.removeGroup(groupId)
 		return err

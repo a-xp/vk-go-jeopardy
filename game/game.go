@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type processingContext struct {
@@ -109,7 +110,11 @@ func answerQuestion(ctx *processingContext) {
 			ctx.session.CurrentTopic = -1
 		}
 	}
-	ctx.session.Score = calcGameScore(ctx.session, game)
+	newScore := calcGameScore(ctx.session, game)
+	if newScore != ctx.session.Score {
+		ctx.session.Score = newScore
+		ctx.session.CompleteTime = time.Now().UnixMilli()
+	}
 	if isGameComplete(ctx.session) {
 		ctx.session.Complete = true
 	}
@@ -152,7 +157,7 @@ func isGameComplete(session *domain.Answer) bool {
 
 func isCorrectAnswer(gameAnswers []string, userAnswer string) bool {
 	for _, s := range gameAnswers {
-		if strings.EqualFold(s, userAnswer) {
+		if userAnswer == strings.ToLower(s) {
 			return true
 		}
 	}
