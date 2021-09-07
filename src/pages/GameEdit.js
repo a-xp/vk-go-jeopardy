@@ -59,7 +59,7 @@ function GameEdit({onClose, game, onUpdate, onSelectTopic, onMessageEdit, errors
                         <Input value={game.postLink} onChange={e => setField('postLink', e.currentTarget.value)}/>
                     </FormItem>
                     <FormItem top="Лимит попыток">
-                        <Input type="number" value={(game.rules && game.rules.numTries) || ''}
+                        <Input type="number" value={(game.numTries) || ''}
                                onChange={e => setField('numTries', parseInt(e.currentTarget.value))}/>
                     </FormItem>
                     <Cell
