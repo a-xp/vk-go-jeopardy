@@ -177,7 +177,7 @@ func (dao AppDAO) getGameTop(gameId *string, limit int) ([]*RatingEntry, error) 
 	cur, err := answers.Aggregate(ctx,
 		bson.A{
 			bson.M{"$match": bson.M{"gameId": gameId}},
-			bson.M{"$sort": bson.M{"score": -1, "completeTime": 1}},
+			bson.M{"$sort": bson.D{{"score", -1}, {"completeTime", 1}}},
 			bson.M{"$limit": limit},
 			bson.M{"$lookup": bson.M{
 				"from":         "users",

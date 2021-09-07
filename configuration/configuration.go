@@ -18,7 +18,7 @@ type Configuration struct {
 	}
 	Http struct {
 		ListenAddr string `yaml:"listenAddr"`
-		Mode       string
+		Mode       string `yaml:"mode"`
 		PublicAddr string `yaml:"publicAddr"`
 	}
 	VkApp struct {
