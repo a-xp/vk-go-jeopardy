@@ -34,7 +34,7 @@ func playSession(ctx *processingContext) {
 
 func chooseTopic(ctx *processingContext) {
 	if ctx.session.Complete {
-		sendReply(ctx, ctx.game.Messages.GameComplete, strconv.Itoa(ctx.session.Score))
+		sendReply(ctx, ctx.game.Messages.GameComplete, domain.FormatScore(ctx.session.Score))
 		return
 	}
 	topicNum, found := searchTopicByText(ctx)
@@ -122,7 +122,7 @@ func answerQuestion(ctx *processingContext) {
 		sendReply(ctx, game.Messages.Error)
 	} else {
 		if answer.Result {
-			sendReply(ctx, game.Messages.Correct, strconv.Itoa(game.Topics[topicId].Points))
+			sendReply(ctx, game.Messages.Correct, domain.FormatScore(game.Topics[topicId].Points))
 		} else {
 			if answer.Complete {
 				sendReply(ctx, game.Messages.IncorrectFinal)
@@ -131,7 +131,7 @@ func answerQuestion(ctx *processingContext) {
 			}
 		}
 		if ctx.session.Complete {
-			sendReply(ctx, game.Messages.GameComplete, strconv.Itoa(ctx.session.Score))
+			sendReply(ctx, game.Messages.GameComplete, domain.FormatScore(ctx.session.Score))
 		}
 	}
 }

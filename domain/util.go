@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"fmt"
 	"math/rand"
 	"regexp"
 	"strings"
@@ -18,6 +19,24 @@ func (slice Int64Slice) Search(value int64) bool {
 }
 
 const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+func FormatScore(score int) string {
+	var noun string
+	if score >= 5 && score <= 20 {
+		noun = "баллов"
+	} else {
+		rem := score % 10
+		switch {
+		case rem == 1:
+			noun = "балл"
+		case rem >= 2 && rem <= 4:
+			noun = "балла"
+		default:
+			noun = "баллов"
+		}
+	}
+	return fmt.Sprintf("%d %s", score, noun)
+}
 
 func RandStringBytes(n int) string {
 	b := make([]byte, n)
