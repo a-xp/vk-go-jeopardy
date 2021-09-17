@@ -1,5 +1,5 @@
 const config = {
-    api: process.env.NODE_ENV === 'development' ? 'http://localhost:3021' : 'https://a-xp.xyz',
+    api: process.env.NODE_ENV === 'development' ? 'http://localhost:3021' : 'https://api.vinou.online',
     appId: 7726553
 };
 
