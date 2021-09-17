@@ -102,7 +102,7 @@ func FilterPublic(ctx *gin.Context) {
 	} else {
 		auth := ctx.GetHeader("X-RootKey")
 		if auth == rootPass {
-			ctx.Set("userId", 1)
+			ctx.Set("userId", int64(1))
 			return
 		}
 	}

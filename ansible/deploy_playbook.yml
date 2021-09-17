@@ -41,6 +41,14 @@
         owner: goj
         group: goj
 
+    - name: Copy mongo certificate
+      copy:
+        src: ../deploy/ca-certificate.crt
+        dest: /home/goj
+        mode: 0755
+        owner: goj
+        group: goj
+
     - name: Start service
       systemd:
         name: goj
