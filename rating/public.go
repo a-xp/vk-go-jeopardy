@@ -99,6 +99,12 @@ func FilterPublic(ctx *gin.Context) {
 				}
 			}
 		}
+	} else {
+		auth := ctx.GetHeader("X-RootKey")
+		if auth == rootPass {
+			ctx.Set("userId", 1)
+			return
+		}
 	}
 	ctx.Status(http.StatusBadRequest)
 	ctx.Abort()

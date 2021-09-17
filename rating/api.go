@@ -9,11 +9,13 @@ import (
 
 var vkKey string
 var validateSignature bool
+var rootPass string
 
 func ConfigureAPI(r *gin.Engine, config *configuration.Configuration) {
 
 	vkKey = config.VkApp.Secret
 	validateSignature = config.ValidateRequest
+	rootPass = config.RootPass
 
 	r.Use(cors.New(cors.Config{
 		AllowAllOrigins:  true,

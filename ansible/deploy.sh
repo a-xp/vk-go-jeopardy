@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
-if [[ $1 == "f" ]]; then
+if [[ $1 == "i" ]]; then
+  echo "Preparing infrastructure"
+  ansible-playbook playbook.yml -i hosts.yml
+elif [[ $1 == "f" ]]; then
   echo "Rebuilding frontend"
   cd ../../goj-frontend || exit
   npm run build || exit

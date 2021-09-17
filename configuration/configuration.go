@@ -26,8 +26,9 @@ type Configuration struct {
 		Key    string
 		Url    string
 	}
-	MockResponse    bool `yaml:"mockResponse"`
-	ValidateRequest bool `yaml:"validateRequest"`
+	RootPass        string `yaml:"rootPass"`
+	MockResponse    bool   `yaml:"mockResponse"`
+	ValidateRequest bool   `yaml:"validateRequest"`
 }
 
 func printConfigError(err error) {
