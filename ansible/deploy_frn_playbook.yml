@@ -7,10 +7,10 @@
     - name: Empty www directory
       file:
         state: absent
-        path: /var/www/a-xp.xyz/
+        path: /var/www/{{domain_name}}/
     - name: Copy static files
       copy:
         src: ../../goj-frontend/build/
-        dest: /var/www/a-xp.xyz/
+        dest: /var/www/{{domain_name}}/
         owner: root
         group: root
