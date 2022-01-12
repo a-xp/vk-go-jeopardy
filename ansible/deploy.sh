@@ -18,5 +18,5 @@ elif [[ $1 == "b" ]]; then
   echo "Deploying backend"
   ansible-playbook deploy_playbook.yml -i hosts.yml
 else
-  echo "Use [f]rontend or [b]ackend option"
+  echo "Use [f]rontend, [b]ackend or [i]nfrastructure option"
 fi
