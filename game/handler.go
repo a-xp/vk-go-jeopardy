@@ -129,7 +129,7 @@ func getSession(userId int64, gameId *string) (*domain.Answer, error) {
 	return session, nil
 }
 
-var replyPattern = regexp.MustCompile("^(.+,\\s*)")
+var replyPattern = regexp.MustCompile("^(.+?,\\s*)")
 
 func filterText(original string) (string, bool) {
 	result := replyPattern.ReplaceAllString(original, "")
