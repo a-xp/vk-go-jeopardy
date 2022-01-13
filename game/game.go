@@ -56,7 +56,7 @@ func searchTopicByText(ctx *processingContext) (int, bool) {
 	found := false
 	if err != nil {
 		for num, topic := range ctx.game.Topics {
-			if strings.ToLower(topic.Name) == ctx.text {
+			if domain.CanonizeString(topic.Name) == ctx.text {
 				topicNum = num
 				found = true
 				break
@@ -157,7 +157,7 @@ func isGameComplete(session *domain.Answer) bool {
 
 func isCorrectAnswer(gameAnswers []string, userAnswer string) bool {
 	for _, s := range gameAnswers {
-		if userAnswer == strings.ToLower(s) {
+		if userAnswer == domain.CanonizeString(s) {
 			return true
 		}
 	}

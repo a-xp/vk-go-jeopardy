@@ -133,7 +133,7 @@ var replyPattern = regexp.MustCompile("^(.+?,\\s*)")
 
 func filterText(original string) (string, bool) {
 	result := replyPattern.ReplaceAllString(original, "")
-	result = domain.FilterAnswer(result)
+	result = domain.CanonizeString(result)
 	if len(result) > 0 {
 		return result, true
 	} else {

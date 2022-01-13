@@ -46,11 +46,12 @@ func RandStringBytes(n int) string {
 	return string(b)
 }
 
-var spaceSymbols = regexp.MustCompile("[:—\\-–]+|\\s+")
+var spaceSymbols = regexp.MustCompile("[:—\\-–!]+|\\s+")
 
-func FilterAnswer(answer string) string {
+func CanonizeString(answer string) string {
 	result := spaceSymbols.ReplaceAllString(answer, " ")
 	result = strings.TrimSpace(result)
 	result = strings.ToLower(result)
+	result = strings.ReplaceAll(result, "ё", "е")
 	return result
 }

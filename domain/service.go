@@ -279,12 +279,12 @@ func StoreGame(game *Game) error {
 	}
 	game.Name = strings.TrimSpace(game.Name)
 	for i, t := range game.Topics {
-		game.Topics[i].Name = FilterAnswer(t.Name)
+		game.Topics[i].Name = strings.TrimSpace(t.Name)
 		for j, q := range t.Q {
 			game.Topics[i].Q[j].Text = strings.TrimSpace(q.Text)
 			if game.Topics[i].Q[j].Ans != nil {
 				for k, ans := range game.Topics[i].Q[j].Ans {
-					game.Topics[i].Q[j].Ans[k] = FilterAnswer(ans)
+					game.Topics[i].Q[j].Ans[k] = strings.TrimSpace(ans)
 				}
 			}
 		}

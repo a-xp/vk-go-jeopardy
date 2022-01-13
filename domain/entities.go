@@ -13,6 +13,17 @@ type GameHeader struct {
 	RatingUrl *string `json:"ratingUrl"`
 }
 
+type Topic struct {
+	Name   string     `json:"name"`
+	Points int        `json:"points"`
+	Q      []Question `json:"q"`
+}
+
+type Question struct {
+	Ans  []string `json:"ans"`
+	Text string   `json:"text"`
+}
+
 type Game struct {
 	GameHeader `bson:",inline"`
 	Messages   struct {
@@ -30,14 +41,7 @@ type Game struct {
 		InstantWin bool `bson:"instantWin" json:"instantWin"`
 		NumTries   int  `bson:"numTries" json:"numTries"`
 	} `json:"rules"`
-	Topics []struct {
-		Name   string `json:"name"`
-		Points int    `json:"points"`
-		Q      []struct {
-			Ans  []string `json:"ans"`
-			Text string   `json:"text"`
-		} `json:"q"`
-	} `json:"topics"`
+	Topics []Topic `json:"topics"`
 }
 
 type Group struct {
