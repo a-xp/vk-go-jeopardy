@@ -8,7 +8,7 @@ import (
 
 type Configuration struct {
 	Mongo struct {
-		Url     string
+		Scheme  string
 		Host    string
 		Options string
 		Timeout int
@@ -42,6 +42,7 @@ func createDefaultConfig() *Configuration {
 	cfg.Http.Mode = "debug"
 	cfg.MockResponse = true
 	cfg.ValidateRequest = true
+	cfg.Mongo.Scheme = "mongo+srv"
 	return &cfg
 }
 

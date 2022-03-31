@@ -20,7 +20,7 @@ func initDAO(cfg *configuration.Configuration) *AppDAO {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 	connectStr := url.URL{
-		Scheme:   "mongodb+srv",
+		Scheme:   cfg.Mongo.Scheme,
 		User:     url.UserPassword(cfg.Mongo.User, cfg.Mongo.Pass),
 		Host:     cfg.Mongo.Host,
 		Path:     cfg.Mongo.Name,
