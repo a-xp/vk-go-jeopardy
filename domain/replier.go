@@ -31,6 +31,7 @@ var Replier *VkReplier
 
 var maxDelay = 1 * time.Second
 var bufWindow = 250 * time.Millisecond
+var maxBatch = 20
 
 type ReplyMsg struct {
 	PostOwnerId string `json:"owner_id"`
@@ -57,7 +58,7 @@ func (r *VkReplier) worker() {
 			buf = append(buf, m)
 		case <-time.After(bufWindow):
 		}
-		if len(buf) > 0 && time.Now().Sub(lastSend) > maxDelay {
+		if len(buf) > 0 && (time.Now().Sub(lastSend) > maxDelay || len(buf) >= maxBatch) {
 			r.send(buf)
 			buf = buf[:0]
 		}
