@@ -207,7 +207,7 @@ func (dao AppDAO) getGameTop(gameId *string, limit int) ([]*RatingEntry, error) 
 	if err != nil {
 		return nil, err
 	}
-	for i, _ := range result {
+	for i := range result {
 		result[i].Pos = i + 1
 	}
 	return result, nil

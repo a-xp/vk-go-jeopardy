@@ -17,6 +17,7 @@ var AppConfig *configuration.Configuration
 func main() {
 	rand.Seed(time.Now().UnixNano())
 	AppConfig = configuration.LoadConfigFile()
+	domain.InitReplier()
 	domain.InitEngine(AppConfig)
 	domain.AddRatingUpdateCallback(rating.DropRatingCache)
 	domain.AddGameUpdateCallback(rating.DropNamesCache)

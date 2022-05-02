@@ -4,4 +4,5 @@ application.yml
 ansible/hosts/prod1.yml
 ansible/hosts
 deploy/
+test_resources/key.txt
 

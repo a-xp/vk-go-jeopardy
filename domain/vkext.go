@@ -176,6 +176,12 @@ func (client *VKExt) WallPostComment(ownerID int, postID int, message string, pa
 	if err = json.Unmarshal(resp.Response, &m); err != nil {
 		return 0, err
 	}
-
 	return m.CommentId, nil
+}
+
+func (client *VKExt) Execute(code string) error {
+	params := url.Values{}
+	params.Set("code", code)
+	_, err := client.Client.MakeRequest("execute", params)
+	return err
 }

@@ -4,7 +4,6 @@ import (
 	"goj/domain"
 	"log"
 	"math/rand"
-	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -183,11 +182,12 @@ func sendReply(ctx *processingContext, template string, param ...string) {
 		message = strings.ReplaceAll(template, "#X", param[0])
 	}
 	if !domain.MockResponse {
-		vkParams := url.Values{}
-		vkParams.Add("reply_to_comment", strconv.FormatInt(ctx.event.Details.Id, 10))
-		_, err := ctx.client.WallPostComment(int(ctx.game.Post.PostOwnerId), int(ctx.game.Post.PostId), message, vkParams)
-		if err != nil {
-			log.Print("Failed to respond: ", err)
+		domain.Replier.Input() <- domain.ReplyMsg{
+			PostOwnerId: strconv.FormatInt(ctx.game.Post.PostOwnerId, 10),
+			PostId:      strconv.FormatInt(ctx.game.Post.PostId, 10),
+			CommentId:   strconv.FormatInt(ctx.event.Details.Id, 10),
+			Message:     message,
+			AccessToken: ctx.group.ApiKey,
 		}
 	} else {
 		log.Printf("Sending response to %d with message %s", ctx.game.Post.PostId, message)
