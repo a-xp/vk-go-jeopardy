@@ -4,6 +4,7 @@
 package domain
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"testing"
@@ -21,26 +22,14 @@ func getTestKey() string {
 func TestThatSendMessageThrowsNoErrors(t *testing.T) {
 	InitReplier()
 	token := getTestKey()
-	Replier.Input() <- ReplyMsg{
-		PostOwnerId: "-196065343",
-		PostId:      "390",
-		CommentId:   "406",
-		Message:     "Hello",
-		AccessToken: token,
-	}
-	Replier.Input() <- ReplyMsg{
-		PostOwnerId: "-196065343",
-		PostId:      "390",
-		CommentId:   "406",
-		Message:     "Hello 2",
-		AccessToken: token,
-	}
-	Replier.Input() <- ReplyMsg{
-		PostOwnerId: "-196065343",
-		PostId:      "390",
-		CommentId:   "406",
-		Message:     "Hello 3",
-		AccessToken: token,
+	for i := 0; i < 10; i++ {
+		Replier.Input() <- ReplyMsg{
+			PostOwnerId: "-196065343",
+			PostId:      "501",
+			CommentId:   "503",
+			Message:     fmt.Sprintf("Hello %d", i),
+			AccessToken: token,
+		}
 	}
 	<-time.After(time.Second * 5)
 }
