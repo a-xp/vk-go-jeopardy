@@ -27,8 +27,8 @@ func TestThatSendMessageThrowsNoErrors(t *testing.T) {
 	for i := 0; i < 1000; i++ {
 		Replier.Send(ReplyMsg{
 			PostOwnerId: "-196065343",
-			PostId:      "501",
-			CommentId:   "677",
+			PostId:      "1537",
+			CommentId:   "1537",
 			Message:     fmt.Sprintf("Hello %d", i),
 			AccessToken: tokens[i%len(tokens)],
 		})

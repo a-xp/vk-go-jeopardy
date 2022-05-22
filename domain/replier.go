@@ -32,7 +32,7 @@ func (e *vkErrorResponse) Error() string {
 
 var Replier *VkReplier
 
-var sendInterval = time.Second / 4
+var sendInterval = 1100 * time.Millisecond
 
 type ReplyMsg struct {
 	PostOwnerId string `json:"owner_id"`
