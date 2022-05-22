@@ -8,7 +8,6 @@ import (
 	"net"
 	"net/http"
 	"net/url"
-	"strings"
 	"time"
 )
 
@@ -19,19 +18,21 @@ const (
 
 type vkAPIResponse struct {
 	Response      json.RawMessage `json:"response"`
-	ResponseError vkError         `json:"error"`
+	ResponseError vkErrorResponse `json:"error"`
 }
 
-type vkError struct {
+type vkErrorResponse struct {
 	ErrorCode int    `json:"error_code"`
 	ErrorMsg  string `json:"error_msg"`
 }
 
+func (e *vkErrorResponse) Error() string {
+	return fmt.Sprintf("[%d] %s", e.ErrorCode, e.ErrorMsg)
+}
+
 var Replier *VkReplier
 
-var maxDelay = 1 * time.Second
-var bufWindow = 250 * time.Millisecond
-var maxBatch = 20
+var sendInterval = time.Second / 4
 
 type ReplyMsg struct {
 	PostOwnerId string `json:"owner_id"`
@@ -42,98 +43,72 @@ type ReplyMsg struct {
 }
 
 type VkReplier struct {
-	input  chan ReplyMsg
+	queue  chan ReplyMsg
 	client *http.Client
 }
 
+func (r *VkReplier) Send(msg ReplyMsg) {
+	r.queue <- msg
+}
+
 func (r *VkReplier) worker() {
-	buf := make([]ReplyMsg, 0)
-	lastSend := time.Now()
 	for {
 		select {
-		case m, more := <-r.input:
+		case m, more := <-r.queue:
 			if !more {
 				return
 			}
-			buf = append(buf, m)
-		case <-time.After(bufWindow):
-		}
-		if len(buf) > 0 && (time.Now().Sub(lastSend) > maxDelay || len(buf) >= maxBatch) {
-			r.send(buf)
-			buf = buf[:0]
+			now := time.Now()
+			r.replyWithRetry(&m)
+			wait := sendInterval - time.Now().Sub(now)
+			<-time.After(wait)
 		}
 	}
 }
 
-func (r *VkReplier) send(messages []ReplyMsg) {
-	groups := map[string][]ReplyMsg{}
-	for _, m := range messages {
-		groups[m.AccessToken] = append(groups[m.AccessToken], m)
-	}
-	for token, items := range groups {
-		r.sendToGroup(items, token)
-	}
-}
-
-func (r *VkReplier) sendToGroup(messages []ReplyMsg, token string) {
-	lines := make([]string, len(messages))
-	for i, m := range messages {
-		b, _ := json.Marshal(m)
-		lines[i] = fmt.Sprintf("r.push(API.wall.createComment(%s).comment_id);", string(b))
-	}
-	code := strings.Join(lines, "\n")
-	code = fmt.Sprintf("var r = [];\n%s\nreturn r;\n", code)
-	fmt.Printf("Sending command %s", code)
-	if err, resp := r.execute(code, token); err != nil {
-		log.Printf("Error responding: %v", err)
-	} else {
-		r.processResponse(resp, messages)
-	}
-}
-
-func (r *VkReplier) processResponse(message json.RawMessage, messages []ReplyMsg) {
-	var ids []*int
-	if err := json.Unmarshal(message, &ids); err != nil {
-		log.Printf("Failed to deserialize vk reply response %v", err)
-	} else {
-		for k, v := range ids {
-			if v == nil {
-				log.Printf("Reply to comment %s failed with unknown error", messages[k].CommentId)
+func (r VkReplier) replyWithRetry(msg *ReplyMsg) {
+	for {
+		err := r.vkReply(msg)
+		if err != nil {
+			if vkErr, ok := err.(*vkErrorResponse); ok && vkErr.ErrorCode == 9 {
+				<-time.After(15 * time.Second)
+				continue
+			} else {
+				log.Printf("Failed to response to %s:%s: %v", msg.PostOwnerId, msg.CommentId, err)
 			}
 		}
+		break
 	}
 }
 
-func (r *VkReplier) Input() chan<- ReplyMsg {
-	return r.input
-}
-
-func (r *VkReplier) execute(code string, token string) (error, json.RawMessage) {
+func (r *VkReplier) vkReply(msg *ReplyMsg) error {
+	log.Printf("Replying %s to comment %s", msg.Message, msg.CommentId)
 	params := url.Values{}
-	params.Set("code", code)
 	params.Set("v", apiVersion)
-	params.Set("access_token", token)
-	methodUrl := fmt.Sprintf(apiURL, "execute")
+	params.Set("access_token", msg.AccessToken)
+	params.Set("owner_id", msg.PostOwnerId)
+	params.Set("post_id", msg.PostId)
+	params.Set("reply_to_comment", msg.CommentId)
+	params.Set("message", msg.Message)
+	methodUrl := fmt.Sprintf(apiURL, "wall.createComment")
 	response, err := r.client.PostForm(methodUrl, params)
 	if err != nil {
-		return err, nil
+		return err
 	}
 	defer response.Body.Close()
+	var jsonResponse vkAPIResponse
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return err, nil
+		return err
 	}
-	var jsonResponse vkAPIResponse
 	err = json.Unmarshal(body, &jsonResponse)
 	if err != nil {
-		return err, nil
+		return err
 	}
 	if jsonResponse.ResponseError.ErrorCode != 0 {
-		return fmt.Errorf("vk returened error %d %s",
-			jsonResponse.ResponseError.ErrorCode,
-			jsonResponse.ResponseError.ErrorMsg), nil
+		return &jsonResponse.ResponseError
 	}
-	return nil, jsonResponse.Response
+	return nil
 }
 
 func InitReplier() {
@@ -148,8 +123,8 @@ func InitReplier() {
 		Transport: netTransport,
 	}
 	Replier = &VkReplier{
-		input:  make(chan ReplyMsg, 100),
 		client: netClient,
+		queue:  make(chan ReplyMsg, 3000),
 	}
 	go Replier.worker()
 }

@@ -7,29 +7,31 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"testing"
 	"time"
 )
 
-func getTestKey() string {
+func getTestKeys() []string {
 	buf, err := os.ReadFile("../test_resources/key.txt")
 	if err != nil {
 		log.Panic(err)
 	}
-	return string(buf)
+	keys := strings.Split(string(buf), "\n")
+	return keys
 }
 
 func TestThatSendMessageThrowsNoErrors(t *testing.T) {
 	InitReplier()
-	token := getTestKey()
-	for i := 0; i < 10; i++ {
-		Replier.Input() <- ReplyMsg{
+	tokens := getTestKeys()
+	for i := 0; i < 1000; i++ {
+		Replier.Send(ReplyMsg{
 			PostOwnerId: "-196065343",
 			PostId:      "501",
-			CommentId:   "503",
+			CommentId:   "677",
 			Message:     fmt.Sprintf("Hello %d", i),
-			AccessToken: token,
-		}
+			AccessToken: tokens[i%len(tokens)],
+		})
 	}
-	<-time.After(time.Second * 5)
+	<-time.After(time.Second * 360)
 }

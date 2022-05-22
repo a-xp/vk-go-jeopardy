@@ -182,13 +182,13 @@ func sendReply(ctx *processingContext, template string, param ...string) {
 		message = strings.ReplaceAll(template, "#X", param[0])
 	}
 	if !domain.MockResponse {
-		domain.Replier.Input() <- domain.ReplyMsg{
+		domain.Replier.Send(domain.ReplyMsg{
 			PostOwnerId: strconv.FormatInt(ctx.game.Post.PostOwnerId, 10),
 			PostId:      strconv.FormatInt(ctx.game.Post.PostId, 10),
 			CommentId:   strconv.FormatInt(ctx.event.Details.Id, 10),
 			Message:     message,
 			AccessToken: ctx.group.ApiKey,
-		}
+		})
 	} else {
 		log.Printf("Sending response to %d with message %s", ctx.game.Post.PostId, message)
 	}
