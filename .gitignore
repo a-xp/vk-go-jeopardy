@@ -1,0 +1,13 @@
+# Backend
+backend/bin/
+backend/deploy/
+backend/application.yml
+
+# Frontend
+frontend/node_modules/
+frontend/build/
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store

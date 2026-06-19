@@ -1,0 +1,47 @@
+[tools]
+go = "1.23"
+node = "18"
+
+[env]
+# react-scripts 4 / webpack need the legacy OpenSSL provider on Node 17+
+NODE_OPTIONS = "--openssl-legacy-provider"
+
+# ── backend (Go) ──
+[tasks."backend:build"]
+description = "Build the backend server binary"
+dir = "backend"
+run = "go build -o bin/goj ."
+
+[tasks."backend:run"]
+description = "Run the backend server"
+dir = "backend"
+run = "go run ."
+
+[tasks."backend:test"]
+description = "Run backend tests"
+dir = "backend"
+run = "go test ./..."
+
+[tasks."backend:lint"]
+description = "Vet + golangci-lint the backend"
+dir = "backend"
+run = [
+  "go vet ./...",
+  "go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.61.0 run ./...",
+]
+
+# ── frontend (React) ──
+[tasks."frontend:install"]
+description = "Install frontend dependencies"
+dir = "frontend"
+run = "npm install"
+
+[tasks."frontend:start"]
+description = "Run the frontend dev server"
+dir = "frontend"
+run = "npm start"
+
+[tasks."frontend:build"]
+description = "Build the frontend"
+dir = "frontend"
+run = "npm run build"
