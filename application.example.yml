@@ -1,0 +1,23 @@
+# Copy to application.yml and fill in real values (application.yml is git-ignored).
+mongo:
+  scheme: mongodb+srv
+  host: cluster0.example.mongodb.net
+  options: retryWrites=true&w=majority
+  timeout: 30
+  name: jeopardy
+  user: CHANGE_ME
+  pass: CHANGE_ME
+
+http:
+  listenAddr: 0.0.0.0:9010
+  mode: debug          # debug | release
+  publicAddr: https://your-host.example.com
+
+vkApp:
+  secret: CHANGE_ME    # VK Mini App secret
+  key: CHANGE_ME       # VK Mini App key
+  url: https://your-host.example.com/rating
+
+rootPass: CHANGE_ME
+mockResponse: true     # true = don't post back to VK (local testing)
+validateRequest: true
