@@ -1,0 +1,25 @@
+[tools]
+go = "1.23"
+
+[tasks.build]
+description = "Build the server binary"
+run = "go build -o bin/goj ."
+
+[tasks.run]
+description = "Run the server locally"
+run = "go run ."
+
+[tasks.test]
+description = "Run the test suite"
+run = "go test ./..."
+
+[tasks.lint]
+description = "Run go vet and golangci-lint"
+run = [
+  "go vet ./...",
+  "go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run",
+]
+
+[tasks.tidy]
+description = "Tidy go modules"
+run = "go mod tidy"
