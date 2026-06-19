@@ -5,11 +5,9 @@ import (
 	"fmt"
 	"goj/configuration"
 	"log"
-	"math/rand"
 	"regexp"
 	"strings"
 	"sync"
-	"time"
 )
 
 var gamesLock sync.RWMutex
@@ -36,7 +34,6 @@ func AddRatingUpdateCallback(f func(id string)) {
 
 func InitEngine(cfg *configuration.Configuration) {
 	DAO = initDAO(cfg)
-	rand.Seed(time.Now().UnixNano())
 	MockResponse = cfg.MockResponse
 	PublicAddr = cfg.Http.PublicAddr
 	RatingAppUrl = cfg.VkApp.Url
@@ -148,7 +145,7 @@ func RemoveAdmin(id int64) error {
 	return err
 }
 
-var idPattern = regexp.MustCompile("^(http://|https://)?(www.)?(vk\\.com|vkontakte\\.ru)/(id\\d+|[a-zA-Z0-9_.]+)$")
+var idPattern = regexp.MustCompile(`^(http://|https://)?(www.)?(vk\.com|vkontakte\.ru)/(id\d+|[a-zA-Z0-9_.]+)$`)
 
 func AddAdmin(idStr string) error {
 	client, err := CreateClient(VkKey)

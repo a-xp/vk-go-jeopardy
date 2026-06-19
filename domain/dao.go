@@ -60,7 +60,7 @@ func (dao *AppDAO) loadActiveGames() ([]*Game, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	games := dao.client.Database(dao.name).Collection("games")
-	cur, err := games.Find(ctx, bson.D{{"active", true}})
+	cur, err := games.Find(ctx, bson.D{{Key: "active", Value: true}})
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +88,7 @@ func (dao *AppDAO) findGroupById(id int64) (*Group, bool) {
 	defer cancel()
 	groups := dao.client.Database(dao.name).Collection("groups")
 	var result Group
-	err := groups.FindOne(ctx, bson.D{{"_id", id}}).Decode(&result)
+	err := groups.FindOne(ctx, bson.D{{Key: "_id", Value: id}}).Decode(&result)
 	if err != nil {
 		return nil, false
 	}
@@ -100,7 +100,7 @@ func (dao AppDAO) findUserById(id int64) (*User, bool) {
 	defer cancel()
 	users := dao.client.Database(dao.name).Collection("users")
 	var result User
-	err := users.FindOne(ctx, bson.D{{"_id", id}}).Decode(&result)
+	err := users.FindOne(ctx, bson.D{{Key: "_id", Value: id}}).Decode(&result)
 	if err != nil {
 		return nil, false
 	}
@@ -112,7 +112,7 @@ func (dao AppDAO) storeUser(user *User) error {
 	defer cancel()
 	users := dao.client.Database(dao.name).Collection("users")
 	opts := options.Replace().SetUpsert(true)
-	_, err := users.ReplaceOne(ctx, bson.D{{"_id", user.Id}}, user, opts)
+	_, err := users.ReplaceOne(ctx, bson.D{{Key: "_id", Value: user.Id}}, user, opts)
 	return err
 }
 
@@ -121,7 +121,7 @@ func (dao AppDAO) getGameSession(userId int64, gameId *string) (*Answer, error) 
 	defer cancel()
 	answers := dao.client.Database(dao.name).Collection("answers")
 	var result Answer
-	err := answers.FindOne(ctx, bson.D{{"gameId", gameId}, {"userId", userId}}).Decode(&result)
+	err := answers.FindOne(ctx, bson.D{{Key: "gameId", Value: gameId}, {Key: "userId", Value: userId}}).Decode(&result)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, nil
@@ -140,7 +140,7 @@ func (dao AppDAO) storeGameSession(answer *Answer) error {
 		answer.Id = &newId
 	}
 	opts := options.Replace().SetUpsert(true)
-	_, err := answers.ReplaceOne(ctx, bson.D{{"_id", answer.Id}}, answer, opts)
+	_, err := answers.ReplaceOne(ctx, bson.D{{Key: "_id", Value: answer.Id}}, answer, opts)
 	return err
 }
 
@@ -177,7 +177,7 @@ func (dao AppDAO) getGameTop(gameId *string, limit int) ([]*RatingEntry, error) 
 	cur, err := answers.Aggregate(ctx,
 		bson.A{
 			bson.M{"$match": bson.M{"gameId": gameId}},
-			bson.M{"$sort": bson.D{{"score", -1}, {"completeTime", 1}}},
+			bson.M{"$sort": bson.D{{Key: "score", Value: -1}, {Key: "completeTime", Value: 1}}},
 			bson.M{"$limit": limit},
 			bson.M{"$lookup": bson.M{
 				"from":         "users",
@@ -238,7 +238,7 @@ func (dao AppDAO) getGameById(gameId *string) (*Game, bool) {
 		return nil, false
 	}
 	var result Game
-	err = groups.FindOne(ctx, bson.D{{"_id", oId}}).Decode(&result)
+	err = groups.FindOne(ctx, bson.D{{Key: "_id", Value: oId}}).Decode(&result)
 	if err != nil {
 		return nil, false
 	}
@@ -301,9 +301,9 @@ func (dao AppDAO) storeGame(game *Game) error {
 	games := dao.client.Database(dao.name).Collection("games")
 	var err error
 	if game.Id != nil {
-		oId, err := primitive.ObjectIDFromHex(*game.Id)
-		if err != nil {
-			return err
+		oId, idErr := primitive.ObjectIDFromHex(*game.Id)
+		if idErr != nil {
+			return idErr
 		}
 		game.Id = nil
 		_, err = games.ReplaceOne(ctx, bson.M{"_id": oId}, game)

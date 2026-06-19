@@ -46,7 +46,7 @@ func RandStringBytes(n int) string {
 	return string(b)
 }
 
-var spaceSymbols = regexp.MustCompile("[:—\\-–!]+|\\s+")
+var spaceSymbols = regexp.MustCompile(`[:—\-–!]+|\s+`)
 
 func CanonizeString(answer string) string {
 	result := spaceSymbols.ReplaceAllString(answer, " ")

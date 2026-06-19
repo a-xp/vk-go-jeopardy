@@ -7,15 +7,12 @@ import (
 	"goj/game"
 	"goj/rating"
 	"log"
-	"math/rand"
 	"net/http"
-	"time"
 )
 
 var AppConfig *configuration.Configuration
 
 func main() {
-	rand.Seed(time.Now().UnixNano())
 	AppConfig = configuration.LoadConfigFile()
 	domain.InitReplier()
 	domain.InitEngine(AppConfig)

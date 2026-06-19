@@ -3,7 +3,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net"
 	"net/http"
@@ -52,17 +52,11 @@ func (r *VkReplier) Send(msg ReplyMsg) {
 }
 
 func (r *VkReplier) worker() {
-	for {
-		select {
-		case m, more := <-r.queue:
-			if !more {
-				return
-			}
-			now := time.Now()
-			r.replyWithRetry(&m)
-			wait := sendInterval - time.Now().Sub(now)
-			<-time.After(wait)
-		}
+	for m := range r.queue {
+		now := time.Now()
+		r.replyWithRetry(&m)
+		wait := sendInterval - time.Since(now)
+		<-time.After(wait)
 	}
 }
 
@@ -97,7 +91,7 @@ func (r *VkReplier) vkReply(msg *ReplyMsg) error {
 	}
 	defer response.Body.Close()
 	var jsonResponse vkAPIResponse
-	body, err := ioutil.ReadAll(response.Body)
+	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		return err
 	}
